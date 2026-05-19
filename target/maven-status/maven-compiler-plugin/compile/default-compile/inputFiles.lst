@@ -28,6 +28,7 @@
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/LoginUseCase.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/network/PushListenerClient.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/AddProductUseCase.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/report/ReshelveReport.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/factory/ProductFactory.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/GuiAppContext.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/valueobject/ProductId.java
@@ -57,6 +58,7 @@
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/service/BillNumberService.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/console/SYOSApplication.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/RemoteSyosClient.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/report/BillReport.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/repository/StockRepository.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/factory/StockBatchFactory.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/repository/BillReadRepository.java

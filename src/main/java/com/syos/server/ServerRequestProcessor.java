@@ -5,8 +5,10 @@ import java.util.Map;
 
 import com.syos.application.factory.ProductFactory;
 import com.syos.application.factory.StockBatchFactory;
+import com.syos.application.report.BillReport;
 import com.syos.application.report.DailySalesReport;
 import com.syos.application.report.IReportGenerator;
+import com.syos.application.report.ReshelveReport;
 import com.syos.application.report.StockStatusReport;
 import com.syos.application.service.BillCalculationService;
 import com.syos.application.service.BillNumberService;
@@ -45,6 +47,8 @@ public class ServerRequestProcessor {
     private final CheckoutService checkoutService;
     private final IReportGenerator dailySalesReport;
     private final IReportGenerator stockStatusReport;
+    private final IReportGenerator billReport;
+    private final IReportGenerator reshelveReport;
     private final com.syos.server.push.PushNotificationService pushService;
 
     public ServerRequestProcessor(ProductRepository productRepository,
@@ -67,6 +71,8 @@ public class ServerRequestProcessor {
         this.checkoutService = new CheckoutService(productRepository, inventoryManager, billRepository, billNumberService, billCalculationService);
         this.dailySalesReport = new DailySalesReport(billRepository, LocalDate.now());
         this.stockStatusReport = new StockStatusReport(stockRepository, productRepository);
+        this.billReport = new BillReport(billRepository);
+        this.reshelveReport = new ReshelveReport(billRepository, productRepository, LocalDate.now());
         this.pushService = null;
     }
 
@@ -91,6 +97,8 @@ public class ServerRequestProcessor {
         this.checkoutService = new CheckoutService(productRepository, inventoryManager, billRepository, billNumberService, billCalculationService);
         this.dailySalesReport = new DailySalesReport(billRepository, LocalDate.now());
         this.stockStatusReport = new StockStatusReport(stockRepository, productRepository);
+        this.billReport = new BillReport(billRepository);
+        this.reshelveReport = new ReshelveReport(billRepository, productRepository, LocalDate.now());
         this.pushService = pushService;
     }
 
@@ -112,6 +120,8 @@ public class ServerRequestProcessor {
             case "CHECKOUT_ONLINE" -> checkout(params, Bill.SaleType.ONLINE);
             case "GET_DAILY_REPORT" -> dailySalesReport.generateReport();
             case "GET_STOCK_REPORT" -> stockStatusReport.generateReport();
+            case "GET_BILL_REPORT" -> billReport.generateReport();
+            case "GET_RESHELVE_REPORT" -> reshelveReport.generateReport();
             default -> throw new IllegalArgumentException("Unsupported action: " + action);
         };
     }

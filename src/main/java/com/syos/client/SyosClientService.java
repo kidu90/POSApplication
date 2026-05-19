@@ -86,6 +86,14 @@ public class SyosClientService {
         return castData(send("GET_STOCK_REPORT", Map.of()));
     }
 
+    public String getBillReport() {
+        return castData(send("GET_BILL_REPORT", Map.of()));
+    }
+
+    public String getReshelveReport() {
+        return castData(send("GET_RESHELVE_REPORT", Map.of()));
+    }
+
     private Bill checkout(String action, Map<String, Integer> cart, String customerName, String customerAddress) {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put("cart", new LinkedHashMap<>(cart));

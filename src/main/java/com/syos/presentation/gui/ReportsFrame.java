@@ -15,6 +15,8 @@ public class ReportsFrame extends JFrame {
     private final GuiAppContext context;
     private final JTextArea dailySalesArea = new JTextArea();
     private final JTextArea stockStatusArea = new JTextArea();
+    private final JTextArea reshelveArea = new JTextArea();
+    private final JTextArea billReportArea = new JTextArea();
 
     public ReportsFrame(GuiAppContext context) {
         this.context = context;
@@ -32,6 +34,8 @@ public class ReportsFrame extends JFrame {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Daily Sales Report", new JScrollPane(dailySalesArea));
         tabs.addTab("Stock Status Report", new JScrollPane(stockStatusArea));
+        tabs.addTab("Reshelve Report", new JScrollPane(reshelveArea));
+        tabs.addTab("Bill Report", new JScrollPane(billReportArea));
         add(tabs, BorderLayout.CENTER);
 
         JPanel footer = new JPanel();
@@ -53,7 +57,9 @@ public class ReportsFrame extends JFrame {
             protected String[] doInBackground() {
                 return new String[] {
                     context.getClientService().getDailyReport(),
-                    context.getClientService().getStockReport()
+                    context.getClientService().getStockReport(),
+                    context.getClientService().getReshelveReport(),
+                    context.getClientService().getBillReport()
                 };
             }
 
@@ -63,8 +69,12 @@ public class ReportsFrame extends JFrame {
                     String[] reports = get();
                     dailySalesArea.setText(reports[0]);
                     stockStatusArea.setText(reports[1]);
+                    reshelveArea.setText(reports[2]);
+                    billReportArea.setText(reports[3]);
                     dailySalesArea.setCaretPosition(0);
                     stockStatusArea.setCaretPosition(0);
+                    reshelveArea.setCaretPosition(0);
+                    billReportArea.setCaretPosition(0);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     dailySalesArea.setText(ex.getMessage());
