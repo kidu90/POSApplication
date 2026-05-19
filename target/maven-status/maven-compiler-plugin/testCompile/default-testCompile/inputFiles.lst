@@ -1,0 +1,10 @@
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/domain/entity/BillTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/integration/infrastructure/persistence/SQLiteStockRepositoryIT.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/application/strategy/StockSelectionStrategyTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/application/strategy/DiscountStrategyTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/application/builder/BillBuilderTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/application/report/StockStatusReportTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/domain/entity/ProductTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/domain/entity/StockBatchTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/domain/valueobject/MoneyTest.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/test/java/com/syos/unit/application/service/BillNumberGeneratorTest.java
