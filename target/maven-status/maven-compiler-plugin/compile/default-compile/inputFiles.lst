@@ -1,12 +1,14 @@
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/CheckoutCommand.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/RegisterUseCase.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/builder/BillBuilder.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/test/TestClientSupport.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/strategy/PercentageDiscountStrategy.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/server/push/PushNotificationService.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/repository/ProductRepository.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/service/BillCalculationService.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/entity/Bill.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/OnlineRegisterFrame.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/CartLogic.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/AddStockUseCase.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/strategy/StockSelectionStrategy.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/InStorePOSFrame.java
@@ -30,11 +32,14 @@
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/GuiAppContext.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/valueobject/ProductId.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/entity/BillItem.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/test/TestClient1.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/server/ServerRequestHandler.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/StockManagementFrame.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/server/push/ConnectedClient.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/valueobject/Money.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/strategy/ThresholdDiscountStrategy.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/domain/entity/User.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/test/TestClient2.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/infrastructure/database/DatabaseManager.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/usecase/ListStockBatchesUseCase.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/service/CheckoutService.java
@@ -74,6 +79,7 @@
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/OnlineLoginFrame.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/presentation/gui/ReportsFrame.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/server/concurrency/CustomRequestQueue.java
+/Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/client/test/RunBothTestClients.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/report/StockStatusReport.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/strategy/FEFOStockSelectionStrategy.java
 /Users/masha/Desktop/SYOS-APP-00a164dc0e8828da1a23502b8eed1278b894dc52/src/main/java/com/syos/application/report/ReportGenerator.java

@@ -43,6 +43,7 @@ public class WorkerThreadPool {
 
     public void shutdown() {
         running = false;
+        queue.shutdown();
         synchronized (queue) {
             queue.notifyAll();
         }

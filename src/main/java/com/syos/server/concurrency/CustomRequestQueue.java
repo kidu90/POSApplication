@@ -2,28 +2,35 @@ package com.syos.server.concurrency;
 
 import java.util.LinkedList;
 
-/**
- * A simple blocking queue implementation for Runnable tasks using the monitor pattern.
- * Internally uses a LinkedList as the backing store and coordinates producers and
- * consumers with wait()/notifyAll(). This class intentionally avoids java.util.concurrent
- * types to keep the implementation minimal and educational.
- */
+
 public class CustomRequestQueue {
     private final LinkedList<Runnable> queue = new LinkedList<>();
+    private boolean shutdown;
 
     public synchronized void enqueue(Runnable task) {
+        if (shutdown) {
+            throw new IllegalStateException("Queue is shut down");
+        }
         queue.addLast(task);
         notifyAll();
     }
 
     public synchronized Runnable dequeue() throws InterruptedException {
-        while (queue.isEmpty()) {
+        while (queue.isEmpty() && !shutdown) {
             wait();
+        }
+        if (shutdown && queue.isEmpty()) {
+            return null;
         }
         return queue.removeFirst();
     }
 
     public synchronized boolean isEmpty() {
         return queue.isEmpty();
+    }
+
+    public synchronized void shutdown() {
+        shutdown = true;
+        notifyAll();
     }
 }
