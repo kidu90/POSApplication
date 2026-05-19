@@ -1,7 +1,7 @@
 package com.syos.presentation.gui;
 
-import com.syos.client.network.ServerConnection;
 import com.syos.client.SyosClientService;
+import com.syos.client.network.ServerConnection;
 
 public class GuiAppContext {
     private final SyosClientService clientService;
