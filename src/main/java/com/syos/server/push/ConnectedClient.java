@@ -20,6 +20,7 @@ public class ConnectedClient {
             pushOut.flush();
             pushOut.reset();
         } catch (IOException ex) {
+            System.err.println("Client disconnected, unregistering: " + ex.getMessage());
             pushNotificationService.unregister(this);
         }
     }

@@ -44,7 +44,11 @@ public class MainMenuFrame extends JFrame {
         JButton stockButton = new JButton("Stock Management");
         stockButton.addActionListener(e -> {
             dispose();
-            new StockManagementFrame(context).setVisible(true);
+            StockManagementFrame stockManagementFrame = context.getStockManagementFrame();
+            if (stockManagementFrame == null || !stockManagementFrame.isDisplayable()) {
+                stockManagementFrame = new StockManagementFrame(context);
+            }
+            stockManagementFrame.setVisible(true);
         });
 
         JButton reportsButton = new JButton("Reports");

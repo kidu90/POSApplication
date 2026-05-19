@@ -29,7 +29,7 @@ import com.syos.domain.valueobject.InventoryChannel;
 
 public class StockManagementFrame extends JFrame {
     private final GuiAppContext context;
-    private final DefaultTableModel stockTableModel = new DefaultTableModel(new Object[] {"Batch Number", "Product", "Channel", "Quantity", "Expiry"}, 0) {
+    private final DefaultTableModel stockTableModel = new DefaultTableModel(new Object[] {"Batch Number", "Product", "Channel", "Quantity", "Expiry", "Received Date"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
@@ -53,6 +53,7 @@ public class StockManagementFrame extends JFrame {
     private final JTextField priceField = new JTextField(8);
     private final JTextField unitField = new JTextField(8);
     private final Map<String, String> productNameLookup = new LinkedHashMap<>();
+    private JTable stockTable;
 
     public StockManagementFrame(GuiAppContext context) {
         this.context = context;
@@ -61,8 +62,6 @@ public class StockManagementFrame extends JFrame {
         setSize(1200, 780);
         setLocationRelativeTo(null);
         buildUi();
-        context.setStockManagementFrame(this);
-        refreshAll();
     }
 
     private void buildUi() {
@@ -87,8 +86,8 @@ public class StockManagementFrame extends JFrame {
 
     private JPanel buildCurrentStockPanel() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
-        JTable table = new JTable(stockTableModel);
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        stockTable = new JTable(stockTableModel);
+        panel.add(new JScrollPane(stockTable), BorderLayout.CENTER);
 
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshStockTable(false));
@@ -163,7 +162,7 @@ public class StockManagementFrame extends JFrame {
         return panel;
     }
 
-    private void refreshAll() {
+    public void refreshAll() {
         refreshProducts();
         refreshStockTable(false);
     }
@@ -230,16 +229,20 @@ public class StockManagementFrame extends JFrame {
     }
 
     public void populateStockTable(List<StockBatch> batches) {
-        stockTableModel.setRowCount(0);
+        DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+        model.setRowCount(0);
         for (StockBatch batch : batches) {
-            stockTableModel.addRow(new Object[] {
+            model.addRow(new Object[] {
                 batch.getBatchNumber().getValue(),
                 productNameLookup.getOrDefault(batch.getProductId().getValue(), batch.getProductId().getValue()),
                 batch.getInventoryChannel().name(),
                 batch.getQuantity(),
-                batch.getExpiryDate().toString()
+                batch.getExpiryDate().toString(),
+                batch.getReceivedDate().toString()
             });
         }
+        stockTable.revalidate();
+        stockTable.repaint();
     }
 
     private void addStock() {

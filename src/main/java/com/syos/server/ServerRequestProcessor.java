@@ -169,6 +169,10 @@ public class ServerRequestProcessor {
 
         String customerName = (String) params.get("customerName");
         String customerAddress = (String) params.get("customerAddress");
-        return checkoutService.checkout(cart, saleType, discountStrategy, stockSelectionStrategy, customerName, customerAddress);
+        Bill bill = checkoutService.checkout(cart, saleType, discountStrategy, stockSelectionStrategy, customerName, customerAddress);
+        if (pushService != null) {
+            pushService.broadcastStockChange();
+        }
+        return bill;
     }
 }

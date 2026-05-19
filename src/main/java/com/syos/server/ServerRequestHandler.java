@@ -1,5 +1,6 @@
 package com.syos.server;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -35,9 +36,7 @@ import com.syos.domain.valueobject.Money;
 import com.syos.shared.Request;
 import com.syos.shared.Response;
 
-/**
- * Dispatches wire requests to application-layer use cases and returns serializable responses.
- */
+
 public class ServerRequestHandler {
     private final AddProductUseCase addProductUseCase;
     private final AddStockUseCase addStockUseCase;
@@ -98,7 +97,7 @@ public class ServerRequestHandler {
                 default -> throw new IllegalArgumentException("Unknown action: " + request.getAction());
             };
             return new Response(true, "OK", data);
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException | IllegalStateException | ClassCastException | NullPointerException | DateTimeException ex) {
             return new Response(false, ex.getMessage(), null);
         }
     }
@@ -154,7 +153,7 @@ public class ServerRequestHandler {
             ? new ThresholdDiscountStrategy(new Money(1000), new Money(50))
             : new NoDiscountStrategy();
 
-        return checkoutService.checkout(
+        Bill bill = checkoutService.checkout(
             cart,
             saleType,
             discountStrategy,
@@ -162,5 +161,9 @@ public class ServerRequestHandler {
             (String) params.get("customerName"),
             (String) params.get("customerAddress")
         );
+        if (pushService != null) {
+            pushService.broadcastStockChange();
+        }
+        return bill;
     }
 }
