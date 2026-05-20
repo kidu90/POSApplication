@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLiteBillRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.infrastructure.persistence</a> &gt; <span class="el_source">SQLiteBillRepository.java</span></div><h1>SQLiteBillRepository.java</h1><pre class="source lang-java linenums">package com.syos.infrastructure.persistence;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.entity.BillItem;
+import com.syos.domain.repository.BillRepository;
+import com.syos.domain.valueobject.BatchNumber;
+import com.syos.domain.valueobject.BillNumber;
+import com.syos.domain.valueobject.Money;
+import com.syos.domain.valueobject.ProductId;
+import com.syos.infrastructure.database.DatabaseManager;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class SQLiteBillRepository implements BillRepository {
+    private final DatabaseManager databaseManager;
+
+<span class="nc" id="L21">    public SQLiteBillRepository(DatabaseManager databaseManager) {</span>
+<span class="nc" id="L22">        this.databaseManager = databaseManager;</span>
+<span class="nc" id="L23">    }</span>
+
+    @Override
+    public void save(Bill bill) {
+<span class="nc" id="L27">        try (Connection conn = databaseManager.getConnection()) {</span>
+<span class="nc" id="L28">            conn.setAutoCommit(false);</span>
+            
+            try {
+<span class="nc" id="L31">                String billSql = &quot;INSERT OR REPLACE INTO bills (bill_number, timestamp, sale_type, subtotal, discount, total, customer_name, customer_address) &quot; +</span>
+                                 &quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;;
+                
+<span class="nc" id="L34">                try (PreparedStatement pstmt = conn.prepareStatement(billSql)) {</span>
+<span class="nc" id="L35">                    pstmt.setString(1, bill.getBillNumber().getValue());</span>
+<span class="nc" id="L36">                    pstmt.setString(2, bill.getTimestamp().toString());</span>
+<span class="nc" id="L37">                    pstmt.setString(3, bill.getSaleType().name());</span>
+<span class="nc" id="L38">                    pstmt.setDouble(4, bill.getSubtotal().getAmount().doubleValue());</span>
+<span class="nc" id="L39">                    pstmt.setDouble(5, bill.getDiscount().getAmount().doubleValue());</span>
+<span class="nc" id="L40">                    pstmt.setDouble(6, bill.getTotal().getAmount().doubleValue());</span>
+<span class="nc" id="L41">                    pstmt.setString(7, bill.getCustomerName());</span>
+<span class="nc" id="L42">                    pstmt.setString(8, bill.getCustomerAddress());</span>
+<span class="nc" id="L43">                    pstmt.executeUpdate();</span>
+                }
+
+<span class="nc" id="L46">                String itemSql = &quot;INSERT INTO bill_items (bill_number, product_id, product_name, quantity, unit_price, batch_number, line_total, discount) &quot; +</span>
+                                 &quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;;
+                
+<span class="nc" id="L49">                try (PreparedStatement pstmt = conn.prepareStatement(itemSql)) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">                    for (BillItem item : bill.getItems()) {</span>
+<span class="nc" id="L51">                        pstmt.setString(1, bill.getBillNumber().getValue());</span>
+<span class="nc" id="L52">                        pstmt.setString(2, item.getProductId().getValue());</span>
+<span class="nc" id="L53">                        pstmt.setString(3, item.getProductName());</span>
+<span class="nc" id="L54">                        pstmt.setInt(4, item.getQuantity());</span>
+<span class="nc" id="L55">                        pstmt.setDouble(5, item.getUnitPrice().getAmount().doubleValue());</span>
+<span class="nc" id="L56">                        pstmt.setString(6, item.getBatchNumber().getValue());</span>
+<span class="nc" id="L57">                        pstmt.setDouble(7, item.getLineTotal().getAmount().doubleValue());</span>
+<span class="nc" id="L58">                        pstmt.setDouble(8, item.getDiscount().getAmount().doubleValue());</span>
+<span class="nc" id="L59">                        pstmt.executeUpdate();</span>
+<span class="nc" id="L60">                    }</span>
+                }
+                
+<span class="nc" id="L63">                conn.commit();</span>
+                
+<span class="nc" id="L65">            } catch (SQLException e) {</span>
+<span class="nc" id="L66">                conn.rollback();</span>
+<span class="nc" id="L67">                throw e;</span>
+<span class="nc" id="L68">            }</span>
+            
+<span class="nc" id="L70">        } catch (SQLException e) {</span>
+<span class="nc" id="L71">            throw new RuntimeException(&quot;Failed to save bill&quot;, e);</span>
+<span class="nc" id="L72">        }</span>
+<span class="nc" id="L73">    }</span>
+
+    @Override
+    public Optional&lt;Bill&gt; findByBillNumber(BillNumber billNumber) {
+<span class="nc" id="L77">        String sql = &quot;SELECT * FROM bills WHERE bill_number = ?&quot;;</span>
+        
+<span class="nc" id="L79">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L80">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L82">            pstmt.setString(1, billNumber.getValue());</span>
+<span class="nc" id="L83">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L86">                Bill bill = mapResultSetToBill(rs);</span>
+<span class="nc" id="L87">                loadBillItems(bill);</span>
+<span class="nc" id="L88">                return Optional.of(bill);</span>
+            }
+            
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L92">            throw new RuntimeException(&quot;Failed to find bill&quot;, e);</span>
+<span class="nc" id="L93">        }</span>
+        
+<span class="nc" id="L95">        return Optional.empty();</span>
+    }
+
+    @Override
+    public List&lt;Bill&gt; findAll() {
+<span class="nc" id="L100">        List&lt;Bill&gt; bills = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L101">        String sql = &quot;SELECT * FROM bills ORDER BY timestamp DESC&quot;;</span>
+        
+<span class="nc" id="L103">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L104">             Statement stmt = conn.createStatement();</span>
+<span class="nc" id="L105">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+            
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L108">                Bill bill = mapResultSetToBill(rs);</span>
+<span class="nc" id="L109">                loadBillItems(bill);</span>
+<span class="nc" id="L110">                bills.add(bill);</span>
+<span class="nc" id="L111">            }</span>
+            
+<span class="nc" id="L113">        } catch (SQLException e) {</span>
+<span class="nc" id="L114">            throw new RuntimeException(&quot;Failed to find all bills&quot;, e);</span>
+<span class="nc" id="L115">        }</span>
+        
+<span class="nc" id="L117">        return bills;</span>
+    }
+
+    @Override
+    public List&lt;Bill&gt; findByDate(LocalDate date) {
+<span class="nc" id="L122">        List&lt;Bill&gt; bills = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L123">        String sql = &quot;SELECT * FROM bills WHERE DATE(timestamp) = ? ORDER BY timestamp&quot;;</span>
+        
+<span class="nc" id="L125">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L126">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L128">            pstmt.setString(1, date.toString());</span>
+<span class="nc" id="L129">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L132">                Bill bill = mapResultSetToBill(rs);</span>
+<span class="nc" id="L133">                loadBillItems(bill);</span>
+<span class="nc" id="L134">                bills.add(bill);</span>
+<span class="nc" id="L135">            }</span>
+            
+<span class="nc" id="L137">        } catch (SQLException e) {</span>
+<span class="nc" id="L138">            throw new RuntimeException(&quot;Failed to find bills by date&quot;, e);</span>
+<span class="nc" id="L139">        }</span>
+        
+<span class="nc" id="L141">        return bills;</span>
+    }
+
+    @Override
+    public List&lt;Bill&gt; findBySaleType(Bill.SaleType saleType) {
+<span class="nc" id="L146">        List&lt;Bill&gt; bills = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L147">        String sql = &quot;SELECT * FROM bills WHERE sale_type = ? ORDER BY timestamp DESC&quot;;</span>
+        
+<span class="nc" id="L149">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L150">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L152">            pstmt.setString(1, saleType.name());</span>
+<span class="nc" id="L153">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L156">                Bill bill = mapResultSetToBill(rs);</span>
+<span class="nc" id="L157">                loadBillItems(bill);</span>
+<span class="nc" id="L158">                bills.add(bill);</span>
+<span class="nc" id="L159">            }</span>
+            
+<span class="nc" id="L161">        } catch (SQLException e) {</span>
+<span class="nc" id="L162">            throw new RuntimeException(&quot;Failed to find bills by sale type&quot;, e);</span>
+<span class="nc" id="L163">        }</span>
+        
+<span class="nc" id="L165">        return bills;</span>
+    }
+
+    private Bill mapResultSetToBill(ResultSet rs) throws SQLException {
+<span class="nc" id="L169">        Bill bill = new Bill(</span>
+<span class="nc" id="L170">            new BillNumber(rs.getString(&quot;bill_number&quot;)),</span>
+<span class="nc" id="L171">            LocalDateTime.parse(rs.getString(&quot;timestamp&quot;)),</span>
+<span class="nc" id="L172">            Bill.SaleType.valueOf(rs.getString(&quot;sale_type&quot;))</span>
+        );
+
+<span class="nc" id="L175">        String customerName = rs.getString(&quot;customer_name&quot;);</span>
+<span class="nc" id="L176">        String customerAddress = rs.getString(&quot;customer_address&quot;);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (customerName != null) {</span>
+<span class="nc" id="L178">            bill.setCustomerDetails(customerName, customerAddress);</span>
+        }
+
+<span class="nc" id="L181">        return bill;</span>
+    }
+
+    private void loadBillItems(Bill bill) {
+<span class="nc" id="L185">        String sql = &quot;SELECT * FROM bill_items WHERE bill_number = ?&quot;;</span>
+        
+<span class="nc" id="L187">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L188">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L190">            pstmt.setString(1, bill.getBillNumber().getValue());</span>
+<span class="nc" id="L191">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L194">                BillItem item = new BillItem(</span>
+<span class="nc" id="L195">                    new ProductId(rs.getString(&quot;product_id&quot;)),</span>
+<span class="nc" id="L196">                    rs.getString(&quot;product_name&quot;),</span>
+<span class="nc" id="L197">                    rs.getInt(&quot;quantity&quot;),</span>
+<span class="nc" id="L198">                    new Money(rs.getDouble(&quot;unit_price&quot;)),</span>
+<span class="nc" id="L199">                    new BatchNumber(rs.getString(&quot;batch_number&quot;))</span>
+                );
+                
+<span class="nc" id="L202">                double discount = rs.getDouble(&quot;discount&quot;);</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                if (discount &gt; 0) {</span>
+<span class="nc" id="L204">                    item.applyDiscount(new Money(discount));</span>
+                }
+                
+<span class="nc" id="L207">                bill.addItem(item);</span>
+<span class="nc" id="L208">            }</span>
+            
+<span class="nc" id="L210">        } catch (SQLException e) {</span>
+<span class="nc" id="L211">            throw new RuntimeException(&quot;Failed to load bill items&quot;, e);</span>
+<span class="nc" id="L212">        }</span>
+<span class="nc" id="L213">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

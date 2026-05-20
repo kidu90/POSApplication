@@ -47,7 +47,9 @@ public class MainMenuFrame extends JFrame {
             StockManagementFrame stockManagementFrame = context.getStockManagementFrame();
             if (stockManagementFrame == null || !stockManagementFrame.isDisplayable()) {
                 stockManagementFrame = new StockManagementFrame(context);
+                context.setStockManagementFrame(stockManagementFrame);
             }
+            stockManagementFrame.refreshAll();
             stockManagementFrame.setVisible(true);
         });
 

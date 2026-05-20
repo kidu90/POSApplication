@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabaseManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.infrastructure.database</a> &gt; <span class="el_source">DatabaseManager.java</span></div><h1>DatabaseManager.java</h1><pre class="source lang-java linenums">package com.syos.infrastructure.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class DatabaseManager {
+    private static DatabaseManager instance;
+    private final String databaseUrl;
+
+<span class="nc" id="L12">    private DatabaseManager(String databasePath) {</span>
+<span class="nc" id="L13">        this.databaseUrl = &quot;jdbc:sqlite:&quot; + databasePath;</span>
+<span class="nc" id="L14">        initializeDatabase();</span>
+<span class="nc" id="L15">    }</span>
+
+    public static synchronized DatabaseManager getInstance(String databasePath) {
+<span class="nc bnc" id="L18" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L19">            instance = new DatabaseManager(databasePath);</span>
+        }
+<span class="nc" id="L21">        return instance;</span>
+    }
+
+    public static synchronized DatabaseManager getInstance() {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L26">            return getInstance(&quot;syos.db&quot;);</span>
+        }
+<span class="nc" id="L28">        return instance;</span>
+    }
+
+    public static synchronized void resetInstance() {
+<span class="nc" id="L32">        instance = null;</span>
+<span class="nc" id="L33">    }</span>
+
+    public Connection getConnection() throws SQLException {
+<span class="nc" id="L36">        return DriverManager.getConnection(databaseUrl);</span>
+    }
+
+    private void initializeDatabase() {
+<span class="nc" id="L40">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L41">             Statement stmt = conn.createStatement()) {</span>
+
+<span class="nc" id="L43">            stmt.execute(&quot;CREATE TABLE IF NOT EXISTS products (&quot; +</span>
+                &quot;id TEXT PRIMARY KEY,&quot; +
+                &quot;name TEXT NOT NULL,&quot; +
+                &quot;category TEXT NOT NULL,&quot; +
+                &quot;unit_price REAL NOT NULL,&quot; +
+                &quot;unit TEXT NOT NULL&quot; +
+                &quot;)&quot;);
+
+<span class="nc" id="L51">            stmt.execute(&quot;CREATE TABLE IF NOT EXISTS users (&quot; +</span>
+                &quot;id INTEGER PRIMARY KEY AUTOINCREMENT,&quot; +
+                &quot;username TEXT NOT NULL UNIQUE,&quot; +
+                &quot;password TEXT NOT NULL,&quot; +
+                &quot;full_name TEXT NOT NULL,&quot; +
+                &quot;address TEXT NOT NULL&quot; +
+                &quot;)&quot;);
+
+<span class="nc" id="L59">            stmt.execute(&quot;CREATE TABLE IF NOT EXISTS stock_batches (&quot; +</span>
+                &quot;batch_number TEXT PRIMARY KEY,&quot; +
+                &quot;product_id TEXT NOT NULL,&quot; +
+                &quot;inventory_channel TEXT NOT NULL DEFAULT 'STORE',&quot; +
+                &quot;quantity INTEGER NOT NULL,&quot; +
+                &quot;expiry_date TEXT NOT NULL,&quot; +
+                &quot;received_date TEXT NOT NULL,&quot; +
+                &quot;FOREIGN KEY (product_id) REFERENCES products(id)&quot; +
+                &quot;)&quot;);
+
+            try {
+<span class="nc" id="L70">                stmt.execute(&quot;ALTER TABLE stock_batches ADD COLUMN inventory_channel TEXT NOT NULL DEFAULT 'STORE'&quot;);</span>
+<span class="nc" id="L71">            } catch (SQLException ignored) {</span>
+                // Column already exists
+<span class="nc" id="L73">            }</span>
+
+<span class="nc" id="L75">            stmt.execute(&quot;CREATE TABLE IF NOT EXISTS bills (&quot; +</span>
+                &quot;bill_number TEXT PRIMARY KEY,&quot; +
+                &quot;timestamp TEXT NOT NULL,&quot; +
+                &quot;sale_type TEXT NOT NULL,&quot; +
+                &quot;subtotal REAL NOT NULL,&quot; +
+                &quot;discount REAL NOT NULL,&quot; +
+                &quot;total REAL NOT NULL,&quot; +
+                &quot;customer_name TEXT,&quot; +
+                &quot;customer_address TEXT&quot; +
+                &quot;)&quot;);
+
+<span class="nc" id="L86">            stmt.execute(&quot;CREATE TABLE IF NOT EXISTS bill_items (&quot; +</span>
+                &quot;id INTEGER PRIMARY KEY AUTOINCREMENT,&quot; +
+                &quot;bill_number TEXT NOT NULL,&quot; +
+                &quot;product_id TEXT NOT NULL,&quot; +
+                &quot;product_name TEXT NOT NULL,&quot; +
+                &quot;quantity INTEGER NOT NULL,&quot; +
+                &quot;unit_price REAL NOT NULL,&quot; +
+                &quot;batch_number TEXT NOT NULL,&quot; +
+                &quot;line_total REAL NOT NULL,&quot; +
+                &quot;discount REAL NOT NULL,&quot; +
+                &quot;FOREIGN KEY (bill_number) REFERENCES bills(bill_number)&quot; +
+                &quot;)&quot;);
+
+<span class="nc" id="L99">        } catch (SQLException e) {</span>
+<span class="nc" id="L100">            throw new RuntimeException(&quot;Failed to initialize database&quot;, e);</span>
+<span class="nc" id="L101">        }</span>
+<span class="nc" id="L102">    }</span>
+
+    public void resetDatabase() {
+<span class="nc" id="L105">        try (Connection conn = getConnection();</span>
+<span class="nc" id="L106">             Statement stmt = conn.createStatement()) {</span>
+<span class="nc" id="L107">            stmt.execute(&quot;DROP TABLE IF EXISTS bill_items&quot;);</span>
+<span class="nc" id="L108">            stmt.execute(&quot;DROP TABLE IF EXISTS bills&quot;);</span>
+<span class="nc" id="L109">            stmt.execute(&quot;DROP TABLE IF EXISTS stock_batches&quot;);</span>
+<span class="nc" id="L110">            stmt.execute(&quot;DROP TABLE IF EXISTS products&quot;);</span>
+<span class="nc" id="L111">            initializeDatabase();</span>
+<span class="nc" id="L112">        } catch (SQLException e) {</span>
+<span class="nc" id="L113">            throw new RuntimeException(&quot;Failed to reset database&quot;, e);</span>
+<span class="nc" id="L114">        }</span>
+<span class="nc" id="L115">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

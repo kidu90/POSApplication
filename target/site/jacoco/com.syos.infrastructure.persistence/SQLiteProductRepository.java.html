@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLiteProductRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.infrastructure.persistence</a> &gt; <span class="el_source">SQLiteProductRepository.java</span></div><h1>SQLiteProductRepository.java</h1><pre class="source lang-java linenums">package com.syos.infrastructure.persistence;
+
+import com.syos.domain.entity.Product;
+import com.syos.domain.repository.ProductRepository;
+import com.syos.domain.valueobject.Money;
+import com.syos.domain.valueobject.ProductId;
+import com.syos.infrastructure.database.DatabaseManager;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class SQLiteProductRepository implements ProductRepository {
+    private final DatabaseManager databaseManager;
+
+<span class="nc" id="L16">    public SQLiteProductRepository(DatabaseManager databaseManager) {</span>
+<span class="nc" id="L17">        this.databaseManager = databaseManager;</span>
+<span class="nc" id="L18">    }</span>
+
+    @Override
+    public void save(Product product) {
+<span class="nc" id="L22">        String sql = &quot;INSERT OR REPLACE INTO products (id, name, category, unit_price, unit) VALUES (?, ?, ?, ?, ?)&quot;;</span>
+        
+<span class="nc" id="L24">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L25">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L27">            pstmt.setString(1, product.getId().getValue());</span>
+<span class="nc" id="L28">            pstmt.setString(2, product.getName());</span>
+<span class="nc" id="L29">            pstmt.setString(3, product.getCategory());</span>
+<span class="nc" id="L30">            pstmt.setDouble(4, product.getUnitPrice().getAmount().doubleValue());</span>
+<span class="nc" id="L31">            pstmt.setString(5, product.getUnit());</span>
+<span class="nc" id="L32">            pstmt.executeUpdate();</span>
+            
+<span class="nc" id="L34">        } catch (SQLException e) {</span>
+<span class="nc" id="L35">            throw new RuntimeException(&quot;Failed to save product&quot;, e);</span>
+<span class="nc" id="L36">        }</span>
+<span class="nc" id="L37">    }</span>
+
+    @Override
+    public Optional&lt;Product&gt; findById(ProductId id) {
+<span class="nc" id="L41">        String sql = &quot;SELECT * FROM products WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L43">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L44">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L46">            pstmt.setString(1, id.getValue());</span>
+<span class="nc" id="L47">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L49" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L50">                return Optional.of(mapResultSetToProduct(rs));</span>
+            }
+            
+<span class="nc bnc" id="L53" title="All 4 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L54">            throw new RuntimeException(&quot;Failed to find product&quot;, e);</span>
+<span class="nc" id="L55">        }</span>
+        
+<span class="nc" id="L57">        return Optional.empty();</span>
+    }
+
+    @Override
+    public List&lt;Product&gt; findAll() {
+<span class="nc" id="L62">        List&lt;Product&gt; products = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L63">        String sql = &quot;SELECT * FROM products ORDER BY id&quot;;</span>
+        
+<span class="nc" id="L65">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L66">             Statement stmt = conn.createStatement();</span>
+<span class="nc" id="L67">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+            
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L70">                products.add(mapResultSetToProduct(rs));</span>
+            }
+            
+<span class="nc" id="L73">        } catch (SQLException e) {</span>
+<span class="nc" id="L74">            throw new RuntimeException(&quot;Failed to find all products&quot;, e);</span>
+<span class="nc" id="L75">        }</span>
+        
+<span class="nc" id="L77">        return products;</span>
+    }
+
+    @Override
+    public List&lt;Product&gt; findByCategory(String category) {
+<span class="nc" id="L82">        List&lt;Product&gt; products = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L83">        String sql = &quot;SELECT * FROM products WHERE category = ? ORDER BY id&quot;;</span>
+        
+<span class="nc" id="L85">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L86">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L88">            pstmt.setString(1, category);</span>
+<span class="nc" id="L89">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L92">                products.add(mapResultSetToProduct(rs));</span>
+            }
+            
+<span class="nc" id="L95">        } catch (SQLException e) {</span>
+<span class="nc" id="L96">            throw new RuntimeException(&quot;Failed to find products by category&quot;, e);</span>
+<span class="nc" id="L97">        }</span>
+        
+<span class="nc" id="L99">        return products;</span>
+    }
+
+    @Override
+    public void delete(ProductId id) {
+<span class="nc" id="L104">        String sql = &quot;DELETE FROM products WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L106">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L107">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L109">            pstmt.setString(1, id.getValue());</span>
+<span class="nc" id="L110">            pstmt.executeUpdate();</span>
+            
+<span class="nc" id="L112">        } catch (SQLException e) {</span>
+<span class="nc" id="L113">            throw new RuntimeException(&quot;Failed to delete product&quot;, e);</span>
+<span class="nc" id="L114">        }</span>
+<span class="nc" id="L115">    }</span>
+
+    private Product mapResultSetToProduct(ResultSet rs) throws SQLException {
+<span class="nc" id="L118">        return new Product(</span>
+<span class="nc" id="L119">            new ProductId(rs.getString(&quot;id&quot;)),</span>
+<span class="nc" id="L120">            rs.getString(&quot;name&quot;),</span>
+<span class="nc" id="L121">            rs.getString(&quot;category&quot;),</span>
+<span class="nc" id="L122">            new Money(rs.getDouble(&quot;unit_price&quot;)),</span>
+<span class="nc" id="L123">            rs.getString(&quot;unit&quot;)</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

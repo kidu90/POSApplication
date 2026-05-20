@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.domain.entity</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package com.syos.domain.entity;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final Long id;
+    private final String username;
+    private final String password;
+    private final String fullName;
+    private final String address;
+
+<span class="fc" id="L15">    public User(Long id, String username, String password, String fullName, String address) {</span>
+<span class="fc" id="L16">        this.id = id;</span>
+<span class="fc" id="L17">        this.username = requireText(username, &quot;Username cannot be null or empty&quot;);</span>
+<span class="fc" id="L18">        this.password = requireText(password, &quot;Password cannot be null or empty&quot;);</span>
+<span class="fc" id="L19">        this.fullName = requireText(fullName, &quot;Full name cannot be null or empty&quot;);</span>
+<span class="fc" id="L20">        this.address = requireText(address, &quot;Address cannot be null or empty&quot;);</span>
+<span class="fc" id="L21">    }</span>
+
+    public User(String username, String password, String fullName, String address) {
+<span class="fc" id="L24">        this(null, username, password, fullName, address);</span>
+<span class="fc" id="L25">    }</span>
+
+    private static String requireText(String value, String message) {
+<span class="pc bpc" id="L28" title="2 of 4 branches missed.">        if (value == null || value.isBlank()) {</span>
+<span class="nc" id="L29">            throw new IllegalArgumentException(message);</span>
+        }
+<span class="fc" id="L31">        return value.trim();</span>
+    }
+
+    public Long getId() {
+<span class="nc" id="L35">        return id;</span>
+    }
+
+    public String getUsername() {
+<span class="fc" id="L39">        return username;</span>
+    }
+
+    public String getPassword() {
+<span class="fc" id="L43">        return password;</span>
+    }
+
+    public String getFullName() {
+<span class="fc" id="L47">        return fullName;</span>
+    }
+
+    public String getAddress() {
+<span class="nc" id="L51">        return address;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L57" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L58">        User user = (User) o;</span>
+<span class="nc" id="L59">        return Objects.equals(username, user.username);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L64">        return Objects.hash(username);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

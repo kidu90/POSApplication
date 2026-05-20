@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillItem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.domain.entity</a> &gt; <span class="el_source">BillItem.java</span></div><h1>BillItem.java</h1><pre class="source lang-java linenums">package com.syos.domain.entity;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+import com.syos.domain.valueobject.BatchNumber;
+import com.syos.domain.valueobject.Money;
+import com.syos.domain.valueobject.ProductId;
+
+public class BillItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final ProductId productId;
+    private final String productName;
+    private final int quantity;
+    private final Money unitPrice;
+    private final BatchNumber batchNumber;
+    private Money lineTotal;
+    private Money discount;
+
+    public BillItem(ProductId productId, String productName, int quantity,
+<span class="fc" id="L22">                    Money unitPrice, BatchNumber batchNumber) {</span>
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (quantity &lt;= 0) {</span>
+<span class="nc" id="L24">            throw new IllegalArgumentException(&quot;Quantity must be positive&quot;);</span>
+        }
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        if (unitPrice == null) {</span>
+<span class="nc" id="L27">            throw new IllegalArgumentException(&quot;Unit price cannot be null&quot;);</span>
+        }
+
+<span class="fc" id="L30">        this.productId = productId;</span>
+<span class="fc" id="L31">        this.productName = productName;</span>
+<span class="fc" id="L32">        this.quantity = quantity;</span>
+<span class="fc" id="L33">        this.unitPrice = unitPrice;</span>
+<span class="fc" id="L34">        this.batchNumber = batchNumber;</span>
+<span class="fc" id="L35">        this.lineTotal = unitPrice.multiply(quantity);</span>
+<span class="fc" id="L36">        this.discount = new Money(0);</span>
+<span class="fc" id="L37">    }</span>
+
+    public void applyDiscount(Money discountAmount) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (discountAmount == null) {</span>
+<span class="nc" id="L41">            throw new IllegalArgumentException(&quot;Discount amount cannot be null&quot;);</span>
+        }
+<span class="nc" id="L43">        this.discount = discountAmount;</span>
+<span class="nc" id="L44">        this.lineTotal = unitPrice.multiply(quantity).subtract(discountAmount);</span>
+<span class="nc" id="L45">    }</span>
+
+    public ProductId getProductId() {
+<span class="nc" id="L48">        return productId;</span>
+    }
+
+    public String getProductName() {
+<span class="fc" id="L52">        return productName;</span>
+    }
+
+    public int getQuantity() {
+<span class="fc" id="L56">        return quantity;</span>
+    }
+
+    public Money getUnitPrice() {
+<span class="fc" id="L60">        return unitPrice;</span>
+    }
+
+    public BatchNumber getBatchNumber() {
+<span class="nc" id="L64">        return batchNumber;</span>
+    }
+
+    public Money getLineTotal() {
+<span class="fc" id="L68">        return lineTotal;</span>
+    }
+
+    public Money getDiscount() {
+<span class="nc" id="L72">        return discount;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L78" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L79">        BillItem billItem = (BillItem) o;</span>
+<span class="nc bnc" id="L80" title="All 4 branches missed.">        return productId.equals(billItem.productId) &amp;&amp; batchNumber.equals(billItem.batchNumber);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L85">        return Objects.hash(productId, batchNumber);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

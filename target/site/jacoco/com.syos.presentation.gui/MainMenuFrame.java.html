@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MainMenuFrame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.presentation.gui</a> &gt; <span class="el_source">MainMenuFrame.java</span></div><h1>MainMenuFrame.java</h1><pre class="source lang-java linenums">package com.syos.presentation.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+public class MainMenuFrame extends JFrame {
+    private final GuiAppContext context;
+
+<span class="nc" id="L15">    public MainMenuFrame(GuiAppContext context) {</span>
+<span class="nc" id="L16">        this.context = context;</span>
+<span class="nc" id="L17">        setTitle(&quot;SYOS Main Menu&quot;);</span>
+<span class="nc" id="L18">        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);</span>
+<span class="nc" id="L19">        setSize(640, 420);</span>
+<span class="nc" id="L20">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L21">        buildUi();</span>
+<span class="nc" id="L22">    }</span>
+
+    private void buildUi() {
+<span class="nc" id="L25">        setLayout(new BorderLayout(10, 10));</span>
+
+<span class="nc" id="L27">        JLabel title = new JLabel(&quot;SYNEX OUTLET STORE&quot;, SwingConstants.CENTER);</span>
+<span class="nc" id="L28">        title.setFont(new Font(&quot;SansSerif&quot;, Font.BOLD, 24));</span>
+<span class="nc" id="L29">        add(title, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L31">        JPanel buttons = new JPanel();</span>
+<span class="nc" id="L32">        JButton inStoreButton = new JButton(&quot;In-Store POS&quot;);</span>
+<span class="nc" id="L33">        inStoreButton.addActionListener(e -&gt; {</span>
+<span class="nc" id="L34">            dispose();</span>
+<span class="nc" id="L35">            new InStorePOSFrame(context).setVisible(true);</span>
+<span class="nc" id="L36">        });</span>
+
+<span class="nc" id="L38">        JButton onlineButton = new JButton(&quot;Online Sales Management&quot;);</span>
+<span class="nc" id="L39">        onlineButton.addActionListener(e -&gt; {</span>
+<span class="nc" id="L40">            dispose();</span>
+<span class="nc" id="L41">            new OnlineLoginFrame(context).setVisible(true);</span>
+<span class="nc" id="L42">        });</span>
+
+<span class="nc" id="L44">        JButton stockButton = new JButton(&quot;Stock Management&quot;);</span>
+<span class="nc" id="L45">        stockButton.addActionListener(e -&gt; {</span>
+<span class="nc" id="L46">            dispose();</span>
+<span class="nc" id="L47">            StockManagementFrame stockManagementFrame = context.getStockManagementFrame();</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">            if (stockManagementFrame == null || !stockManagementFrame.isDisplayable()) {</span>
+<span class="nc" id="L49">                stockManagementFrame = new StockManagementFrame(context);</span>
+<span class="nc" id="L50">                context.setStockManagementFrame(stockManagementFrame);</span>
+            }
+<span class="nc" id="L52">            stockManagementFrame.refreshAll();</span>
+<span class="nc" id="L53">            stockManagementFrame.setVisible(true);</span>
+<span class="nc" id="L54">        });</span>
+
+<span class="nc" id="L56">        JButton reportsButton = new JButton(&quot;Reports&quot;);</span>
+<span class="nc" id="L57">        reportsButton.addActionListener(e -&gt; {</span>
+<span class="nc" id="L58">            dispose();</span>
+<span class="nc" id="L59">            new ReportsFrame(context).setVisible(true);</span>
+<span class="nc" id="L60">        });</span>
+
+<span class="nc" id="L62">        buttons.add(inStoreButton);</span>
+<span class="nc" id="L63">        buttons.add(onlineButton);</span>
+<span class="nc" id="L64">        buttons.add(stockButton);</span>
+<span class="nc" id="L65">        buttons.add(reportsButton);</span>
+<span class="nc" id="L66">        add(buttons, BorderLayout.CENTER);</span>
+<span class="nc" id="L67">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

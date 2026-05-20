@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CheckoutService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.service</a> &gt; <span class="el_source">CheckoutService.java</span></div><h1>CheckoutService.java</h1><pre class="source lang-java linenums">package com.syos.application.service;
+
+import java.util.Map;
+
+import com.syos.application.strategy.DiscountStrategy;
+import com.syos.application.strategy.StockSelectionStrategy;
+import com.syos.application.usecase.CheckoutCommand;
+import com.syos.domain.entity.Bill;
+import com.syos.domain.repository.BillWriteRepository;
+import com.syos.domain.repository.ProductReadRepository;
+
+public class CheckoutService {
+    private final ProductReadRepository productRepository;
+    private final InventoryManager inventoryManager;
+    private final BillWriteRepository billRepository;
+    private final BillNumberService billNumberService;
+    private final BillCalculationService billCalculationService;
+
+    public CheckoutService(ProductReadRepository productRepository,
+                           InventoryManager inventoryManager,
+                           BillWriteRepository billRepository,
+                           BillNumberService billNumberService,
+<span class="fc" id="L23">                           BillCalculationService billCalculationService) {</span>
+<span class="fc" id="L24">        this.productRepository = productRepository;</span>
+<span class="fc" id="L25">        this.inventoryManager = inventoryManager;</span>
+<span class="fc" id="L26">        this.billRepository = billRepository;</span>
+<span class="fc" id="L27">        this.billNumberService = billNumberService;</span>
+<span class="fc" id="L28">        this.billCalculationService = billCalculationService;</span>
+<span class="fc" id="L29">    }</span>
+
+    public Bill checkout(Map&lt;String, Integer&gt; cartItems,
+                         Bill.SaleType saleType,
+                         DiscountStrategy discountStrategy,
+                         StockSelectionStrategy stockSelectionStrategy,
+                         String customerName,
+                         String customerAddress) {
+<span class="pc bpc" id="L37" title="2 of 4 branches missed.">        if (cartItems == null || cartItems.isEmpty()) {</span>
+<span class="nc" id="L38">            throw new IllegalArgumentException(&quot;Cart cannot be empty&quot;);</span>
+        }
+
+<span class="fc" id="L41">        CheckoutCommand command = new CheckoutCommand(</span>
+            productRepository,
+            inventoryManager,
+            billRepository,
+            billNumberService,
+            billCalculationService,
+            stockSelectionStrategy,
+            discountStrategy,
+            cartItems,
+            saleType,
+            customerName,
+            customerAddress
+        );
+
+<span class="fc" id="L55">        command.execute();</span>
+<span class="fc" id="L56">        return command.getGeneratedBill();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReshelveReport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.report</a> &gt; <span class="el_source">ReshelveReport.java</span></div><h1>ReshelveReport.java</h1><pre class="source lang-java linenums">package com.syos.application.report;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.entity.BillItem;
+import com.syos.domain.entity.Product;
+import com.syos.domain.repository.BillReadRepository;
+import com.syos.domain.repository.ProductReadRepository;
+
+public class ReshelveReport extends ReportGenerator {
+    private final BillReadRepository billRepository;
+    private final ProductReadRepository productRepository;
+    private final LocalDate date;
+
+<span class="fc" id="L20">    public ReshelveReport(BillReadRepository billRepository, ProductReadRepository productRepository, LocalDate date) {</span>
+<span class="fc" id="L21">        this.billRepository = billRepository;</span>
+<span class="fc" id="L22">        this.productRepository = productRepository;</span>
+<span class="fc" id="L23">        this.date = date;</span>
+<span class="fc" id="L24">    }</span>
+
+    @Override
+    protected String getReportHeader() {
+<span class="nc" id="L28">        return &quot;=&quot;.repeat(80) + &quot;\n&quot; +</span>
+               &quot;RESHELVE REPORT - SYNEX OUTLET STORE\n&quot; +
+<span class="nc" id="L30">               &quot;Date: &quot; + date.format(DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy&quot;)) + &quot;\n&quot; +</span>
+<span class="nc" id="L31">               &quot;=&quot;.repeat(80);</span>
+    }
+
+    @Override
+    protected String generateReportBody() {
+<span class="nc" id="L36">        List&lt;Bill&gt; bills = billRepository.findByDate(date);</span>
+<span class="nc" id="L37">        Map&lt;String, Integer&gt; totalsByProduct = new HashMap&lt;&gt;();</span>
+
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        for (Bill bill : bills) {</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">            for (BillItem item : bill.getItems()) {</span>
+<span class="nc" id="L41">                totalsByProduct.merge(item.getProductId().getValue(), item.getQuantity(), Integer::sum);</span>
+<span class="nc" id="L42">            }</span>
+<span class="nc" id="L43">        }</span>
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (totalsByProduct.isEmpty()) {</span>
+<span class="nc" id="L46">            return &quot;\nNo sales recorded for this date (nothing to reshelve).\n&quot;;</span>
+        }
+
+<span class="nc" id="L49">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L50">        sb.append(String.format(&quot;%-10s %-30s %-12s%n&quot;, &quot;Product ID&quot;, &quot;Name&quot;, &quot;Quantity Sold&quot;));</span>
+<span class="nc" id="L51">        sb.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (var entry : totalsByProduct.entrySet()) {</span>
+<span class="nc" id="L54">            String pid = entry.getKey();</span>
+<span class="nc" id="L55">            int qty = entry.getValue();</span>
+<span class="nc" id="L56">            Product prod = productRepository.findById(new com.syos.domain.valueobject.ProductId(pid)).orElse(null);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            String name = prod == null ? &quot;&lt;unknown&gt;&quot; : prod.getName();</span>
+<span class="nc" id="L58">            sb.append(String.format(&quot;%-10s %-30s %-12d%n&quot;, pid, name, qty));</span>
+<span class="nc" id="L59">        }</span>
+
+<span class="nc" id="L61">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

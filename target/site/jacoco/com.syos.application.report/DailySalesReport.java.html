@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DailySalesReport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.report</a> &gt; <span class="el_source">DailySalesReport.java</span></div><h1>DailySalesReport.java</h1><pre class="source lang-java linenums">package com.syos.application.report;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.repository.BillReadRepository;
+import com.syos.domain.valueobject.Money;
+
+public class DailySalesReport extends ReportGenerator {
+    private final BillReadRepository billRepository;
+    private final LocalDate date;
+
+<span class="fc" id="L15">    public DailySalesReport(BillReadRepository billRepository, LocalDate date) {</span>
+<span class="fc" id="L16">        this.billRepository = billRepository;</span>
+<span class="fc" id="L17">        this.date = date;</span>
+<span class="fc" id="L18">    }</span>
+
+    @Override
+    protected String getReportHeader() {
+<span class="fc" id="L22">        return &quot;=&quot;.repeat(80) + &quot;\n&quot; +</span>
+               &quot;DAILY SALES REPORT - SYNEX OUTLET STORE\n&quot; +
+<span class="fc" id="L24">               &quot;Date: &quot; + date.format(DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy&quot;)) + &quot;\n&quot; +</span>
+<span class="fc" id="L25">               &quot;=&quot;.repeat(80);</span>
+    }
+
+    @Override
+    protected String generateReportBody() {
+<span class="fc" id="L30">        List&lt;Bill&gt; bills = billRepository.findByDate(date);</span>
+        
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (bills.isEmpty()) {</span>
+<span class="nc" id="L33">            return &quot;\nNo sales recorded for this date.\n&quot;;</span>
+        }
+
+<span class="fc" id="L36">        StringBuilder body = new StringBuilder();</span>
+        
+<span class="fc" id="L38">        Money totalInStore = new Money(0);</span>
+<span class="fc" id="L39">        Money totalOnline = new Money(0);</span>
+<span class="fc" id="L40">        int totalItemsInStore = 0;</span>
+<span class="fc" id="L41">        int totalItemsOnline = 0;</span>
+
+<span class="fc" id="L43">        body.append(&quot;\nIN-STORE SALES:\n&quot;);</span>
+<span class="fc" id="L44">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L45">        body.append(String.format(&quot;%-15s %-20s %-15s %-15s%n&quot;, &quot;Bill Number&quot;, &quot;Time&quot;, &quot;Items&quot;, &quot;Total&quot;));</span>
+<span class="fc" id="L46">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (Bill bill : bills) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (bill.getSaleType() == Bill.SaleType.IN_STORE) {</span>
+<span class="fc" id="L50">                body.append(String.format(&quot;%-15s %-20s %-15d %-15s%n&quot;,</span>
+<span class="fc" id="L51">                    bill.getBillNumber(),</span>
+<span class="fc" id="L52">                    bill.getTimestamp().format(DateTimeFormatter.ofPattern(&quot;HH:mm:ss&quot;)),</span>
+<span class="fc" id="L53">                    bill.getItems().size(),</span>
+<span class="fc" id="L54">                    bill.getTotal()));</span>
+<span class="fc" id="L55">                totalInStore = totalInStore.add(bill.getTotal());</span>
+<span class="fc" id="L56">                totalItemsInStore += bill.getItems().size();</span>
+            }
+<span class="fc" id="L58">        }</span>
+
+<span class="fc" id="L60">        body.append(&quot;\nONLINE SALES:\n&quot;);</span>
+<span class="fc" id="L61">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L62">        body.append(String.format(&quot;%-15s %-25s %-15s %-15s%n&quot;, &quot;Bill Number&quot;, &quot;Customer&quot;, &quot;Items&quot;, &quot;Total&quot;));</span>
+<span class="fc" id="L63">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (Bill bill : bills) {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if (bill.getSaleType() == Bill.SaleType.ONLINE) {</span>
+<span class="nc" id="L67">                body.append(String.format(&quot;%-15s %-25s %-15d %-15s%n&quot;,</span>
+<span class="nc" id="L68">                    bill.getBillNumber(),</span>
+<span class="nc" id="L69">                    bill.getCustomerName(),</span>
+<span class="nc" id="L70">                    bill.getItems().size(),</span>
+<span class="nc" id="L71">                    bill.getTotal()));</span>
+<span class="nc" id="L72">                totalOnline = totalOnline.add(bill.getTotal());</span>
+<span class="nc" id="L73">                totalItemsOnline += bill.getItems().size();</span>
+            }
+<span class="fc" id="L75">        }</span>
+
+<span class="fc" id="L77">        body.append(&quot;\nSUMMARY:\n&quot;);</span>
+<span class="fc" id="L78">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L79">        body.append(String.format(&quot;In-Store Sales: %d transactions, %d items, %s%n&quot;,</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">            bills.stream().filter(b -&gt; b.getSaleType() == Bill.SaleType.IN_STORE).count(),</span>
+<span class="fc" id="L81">            totalItemsInStore,</span>
+            totalInStore));
+<span class="fc" id="L83">        body.append(String.format(&quot;Online Sales: %d transactions, %d items, %s%n&quot;,</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            bills.stream().filter(b -&gt; b.getSaleType() == Bill.SaleType.ONLINE).count(),</span>
+<span class="fc" id="L85">            totalItemsOnline,</span>
+            totalOnline));
+<span class="fc" id="L87">        body.append(String.format(&quot;TOTAL: %d transactions, %d items, %s%n&quot;,</span>
+<span class="fc" id="L88">            bills.size(),</span>
+<span class="fc" id="L89">            totalItemsInStore + totalItemsOnline,</span>
+<span class="fc" id="L90">            totalInStore.add(totalOnline)));</span>
+
+<span class="fc" id="L92">        return body.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

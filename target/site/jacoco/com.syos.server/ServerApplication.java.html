@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServerApplication.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.server</a> &gt; <span class="el_source">ServerApplication.java</span></div><h1>ServerApplication.java</h1><pre class="source lang-java linenums">package com.syos.server;
+
+import java.time.LocalDate;
+
+import com.syos.application.factory.ProductFactory;
+import com.syos.application.factory.StockBatchFactory;
+import com.syos.application.service.BillCalculationService;
+import com.syos.application.service.BillNumberGenerator;
+import com.syos.application.service.BillNumberService;
+import com.syos.application.service.InventoryManager;
+import com.syos.application.usecase.AddProductUseCase;
+import com.syos.application.usecase.AddStockUseCase;
+import com.syos.domain.entity.Product;
+import com.syos.domain.repository.BillRepository;
+import com.syos.domain.repository.ProductRepository;
+import com.syos.domain.repository.StockRepository;
+import com.syos.domain.repository.UserRepository;
+import com.syos.domain.valueobject.InventoryChannel;
+import com.syos.infrastructure.database.DatabaseManager;
+import com.syos.infrastructure.persistence.SQLiteBillRepository;
+import com.syos.infrastructure.persistence.SQLiteProductRepository;
+import com.syos.infrastructure.persistence.SQLiteStockRepository;
+import com.syos.infrastructure.persistence.SQLiteUserRepository;
+
+<span class="nc" id="L25">public class ServerApplication {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L27">        DatabaseManager dbManager = DatabaseManager.getInstance(&quot;syos.db&quot;);</span>
+<span class="nc" id="L28">        ProductRepository productRepository = new SQLiteProductRepository(dbManager);</span>
+<span class="nc" id="L29">        StockRepository stockRepository = new SQLiteStockRepository(dbManager);</span>
+<span class="nc" id="L30">        BillRepository billRepository = new SQLiteBillRepository(dbManager);</span>
+<span class="nc" id="L31">        UserRepository userRepository = new SQLiteUserRepository(dbManager);</span>
+
+<span class="nc" id="L33">        ProductFactory productFactory = new ProductFactory();</span>
+<span class="nc" id="L34">        StockBatchFactory stockBatchFactory = new StockBatchFactory();</span>
+<span class="nc" id="L35">        BillNumberService billNumberService = BillNumberGenerator.getInstance();</span>
+<span class="nc" id="L36">        BillCalculationService billCalculationService = new BillCalculationService();</span>
+<span class="nc" id="L37">        InventoryManager inventoryManager = new InventoryManager(stockRepository, stockRepository);</span>
+
+<span class="nc" id="L39">        AddProductUseCase addProductUseCase = new AddProductUseCase(productRepository);</span>
+<span class="nc" id="L40">        AddStockUseCase addStockUseCase = new AddStockUseCase(stockRepository);</span>
+
+<span class="nc" id="L42">        seedSampleData(productRepository, stockRepository, userRepository, addProductUseCase, addStockUseCase, productFactory, stockBatchFactory);</span>
+
+<span class="nc" id="L44">        com.syos.server.push.PushNotificationService pushService = new com.syos.server.push.PushNotificationService();</span>
+
+<span class="nc" id="L46">        ServerRequestProcessor processor = new ServerRequestProcessor(</span>
+            productRepository,
+            stockRepository,
+            billRepository,
+            userRepository,
+            productFactory,
+            stockBatchFactory,
+            billNumberService,
+            billCalculationService,
+            inventoryManager,
+            pushService
+        );
+
+<span class="nc" id="L59">        RequestQueue requestQueue = new RequestQueue();</span>
+<span class="nc" id="L60">        WorkerThreadPool workerThreadPool = new WorkerThreadPool(5, requestQueue, processor);</span>
+<span class="nc" id="L61">        ThreadPoolServer server = new ThreadPoolServer(9090, requestQueue, workerThreadPool);</span>
+        // Start push listener on port 9091
+<span class="nc" id="L63">        Thread pushThread = new Thread(new com.syos.server.push.PushListenerServer(9091, pushService), &quot;syos-push-listener&quot;);</span>
+<span class="nc" id="L64">        pushThread.setDaemon(true);</span>
+<span class="nc" id="L65">        pushThread.start();</span>
+
+<span class="nc" id="L67">        System.out.println(&quot;Server starting: request port=9090, push port=9091&quot;);</span>
+
+<span class="nc" id="L69">        server.start();</span>
+<span class="nc" id="L70">    }</span>
+
+    private static void seedSampleData(ProductRepository productRepository,
+                                       StockRepository stockRepository,
+                                       UserRepository userRepository,
+                                       AddProductUseCase addProductUseCase,
+                                       AddStockUseCase addStockUseCase,
+                                       ProductFactory productFactory,
+                                       StockBatchFactory stockBatchFactory) {
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (productRepository.findAll().isEmpty()) {</span>
+<span class="nc" id="L80">            Product rice = productFactory.createProduct(&quot;P001&quot;, &quot;Basmati Rice&quot;, &quot;Grains&quot;, 85.00, &quot;kg&quot;);</span>
+<span class="nc" id="L81">            Product milk = productFactory.createProduct(&quot;P002&quot;, &quot;Full Cream Milk&quot;, &quot;Dairy&quot;, 65.00, &quot;liter&quot;);</span>
+<span class="nc" id="L82">            Product bread = productFactory.createProduct(&quot;P003&quot;, &quot;Whole Wheat Bread&quot;, &quot;Bakery&quot;, 45.00, &quot;loaf&quot;);</span>
+<span class="nc" id="L83">            Product oil = productFactory.createProduct(&quot;P004&quot;, &quot;Sunflower Oil&quot;, &quot;Oil&quot;, 180.00, &quot;liter&quot;);</span>
+<span class="nc" id="L84">            Product sugar = productFactory.createProduct(&quot;P005&quot;, &quot;White Sugar&quot;, &quot;Grains&quot;, 55.00, &quot;kg&quot;);</span>
+
+<span class="nc" id="L86">            addProductUseCase.execute(rice);</span>
+<span class="nc" id="L87">            addProductUseCase.execute(milk);</span>
+<span class="nc" id="L88">            addProductUseCase.execute(bread);</span>
+<span class="nc" id="L89">            addProductUseCase.execute(oil);</span>
+<span class="nc" id="L90">            addProductUseCase.execute(sugar);</span>
+        }
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (stockRepository.findAll().isEmpty()) {</span>
+<span class="nc" id="L94">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B001&quot;, &quot;P001&quot;, InventoryChannel.STORE, 100, LocalDate.now().plusMonths(6), LocalDate.now()));</span>
+<span class="nc" id="L95">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B002&quot;, &quot;P001&quot;, InventoryChannel.ONLINE, 50, LocalDate.now().plusMonths(8), LocalDate.now()));</span>
+<span class="nc" id="L96">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B003&quot;, &quot;P002&quot;, InventoryChannel.STORE, 80, LocalDate.now().plusDays(5), LocalDate.now()));</span>
+<span class="nc" id="L97">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B004&quot;, &quot;P003&quot;, InventoryChannel.STORE, 40, LocalDate.now().plusDays(2), LocalDate.now()));</span>
+<span class="nc" id="L98">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B005&quot;, &quot;P004&quot;, InventoryChannel.ONLINE, 60, LocalDate.now().plusMonths(12), LocalDate.now()));</span>
+<span class="nc" id="L99">            addStockUseCase.execute(stockBatchFactory.createBatch(&quot;B006&quot;, &quot;P005&quot;, InventoryChannel.ONLINE, 120, LocalDate.now().plusMonths(10), LocalDate.now()));</span>
+        }
+
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (userRepository.findByUsername(&quot;rajesh&quot;).isEmpty()) {</span>
+<span class="nc" id="L103">            userRepository.save(new com.syos.domain.entity.User(&quot;rajesh&quot;, &quot;password&quot;, &quot;Rajesh Kumar&quot;, &quot;123 MG Road, Bangalore&quot;));</span>
+        }
+<span class="nc" id="L105">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

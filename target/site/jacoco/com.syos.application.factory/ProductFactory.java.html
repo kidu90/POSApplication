@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.factory</a> &gt; <span class="el_source">ProductFactory.java</span></div><h1>ProductFactory.java</h1><pre class="source lang-java linenums">package com.syos.application.factory;
+
+import com.syos.domain.entity.Product;
+import com.syos.domain.valueobject.Money;
+import com.syos.domain.valueobject.ProductId;
+
+<span class="fc" id="L7">public class ProductFactory {</span>
+    public Product createProduct(String id, String name, String category, double price, String unit) {
+<span class="fc" id="L9">        ProductId productId = new ProductId(id);</span>
+<span class="fc" id="L10">        Money unitPrice = new Money(price);</span>
+<span class="fc" id="L11">        return new Product(productId, name, category, unitPrice, unit);</span>
+    }
+
+    public Product createProduct(String id, String name, String category, Money price, String unit) {
+<span class="nc" id="L15">        ProductId productId = new ProductId(id);</span>
+<span class="nc" id="L16">        return new Product(productId, name, category, price, unit);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

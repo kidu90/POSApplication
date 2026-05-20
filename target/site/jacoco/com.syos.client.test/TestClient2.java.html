@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestClient2.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.client.test</a> &gt; <span class="el_source">TestClient2.java</span></div><h1>TestClient2.java</h1><pre class="source lang-java linenums">package com.syos.client.test;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.syos.domain.entity.Bill;
+import com.syos.shared.Response;
+
+<span class="nc" id="L11">public class TestClient2 {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L13">        run();</span>
+<span class="nc" id="L14">    }</span>
+
+    public static void run() {
+<span class="nc" id="L17">        CountDownLatch startLatch = new CountDownLatch(1);</span>
+<span class="nc" id="L18">        CountDownLatch doneLatch = new CountDownLatch(3);</span>
+<span class="nc" id="L19">        Set&lt;String&gt; billNumbers = java.util.Collections.synchronizedSet(new HashSet&lt;&gt;());</span>
+<span class="nc" id="L20">        AtomicInteger duplicates = new AtomicInteger(0);</span>
+
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        for (int threadIndex = 1; threadIndex &lt;= 3; threadIndex++) {</span>
+<span class="nc" id="L23">            int clientThreadIndex = threadIndex;</span>
+<span class="nc" id="L24">            Thread thread = new Thread(() -&gt; {</span>
+                try {
+<span class="nc" id="L26">                    startLatch.await();</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">                    for (int requestIndex = 1; requestIndex &lt;= 10; requestIndex++) {</span>
+<span class="nc" id="L28">                        String sentAt = TestClientSupport.now();</span>
+<span class="nc" id="L29">                        System.out.println(&quot;[TestClient2] thread=&quot; + clientThreadIndex + &quot; sent checkout=&quot; + requestIndex + &quot; at=&quot; + sentAt);</span>
+                        try {
+<span class="nc" id="L31">                            Response response = TestClientSupport.send(&quot;CHECKOUT_ONLINE&quot;, TestClientSupport.checkoutCart(&quot;P005&quot;, 1));</span>
+<span class="nc" id="L32">                            String receivedAt = TestClientSupport.now();</span>
+<span class="nc" id="L33">                            Object data = response.getData();</span>
+<span class="nc" id="L34">                            String billNumber = extractBillNumber(data);</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                            if (billNumber != null) {</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                                if (!billNumbers.add(billNumber)) {</span>
+<span class="nc" id="L37">                                    duplicates.incrementAndGet();</span>
+                                }
+                            }
+<span class="nc" id="L40">                            System.out.println(&quot;[TestClient2] thread=&quot; + clientThreadIndex + &quot; response=&quot; + requestIndex + &quot; at=&quot; + receivedAt + &quot; success=&quot; + response.isSuccess() + &quot; bill=&quot; + billNumber + &quot; message=&quot; + response.getMessage());</span>
+<span class="nc" id="L41">                        } catch (Exception ex) {</span>
+<span class="nc" id="L42">                            String failedAt = TestClientSupport.now();</span>
+<span class="nc" id="L43">                            System.out.println(&quot;[TestClient2] thread=&quot; + clientThreadIndex + &quot; failed checkout=&quot; + requestIndex + &quot; at=&quot; + failedAt + &quot; error=&quot; + ex.getMessage());</span>
+<span class="nc" id="L44">                        }</span>
+                    }
+<span class="nc" id="L46">                } catch (InterruptedException ex) {</span>
+<span class="nc" id="L47">                    Thread.currentThread().interrupt();</span>
+                } finally {
+<span class="nc" id="L49">                    doneLatch.countDown();</span>
+                }
+<span class="nc" id="L51">            }, &quot;test-client-2-&quot; + clientThreadIndex);</span>
+<span class="nc" id="L52">            thread.start();</span>
+        }
+
+<span class="nc" id="L55">        startLatch.countDown();</span>
+
+        try {
+<span class="nc" id="L58">            doneLatch.await();</span>
+<span class="nc" id="L59">        } catch (InterruptedException ex) {</span>
+<span class="nc" id="L60">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L61">        }</span>
+
+<span class="nc" id="L63">        System.out.println(&quot;[TestClient2] duplicate bill numbers=&quot; + duplicates.get());</span>
+<span class="nc" id="L64">    }</span>
+
+    private static String extractBillNumber(Object data) {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (data instanceof Bill bill) {</span>
+<span class="nc" id="L68">            return bill.getBillNumber().getValue();</span>
+        }
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L71">            return null;</span>
+        }
+<span class="nc" id="L73">        return String.valueOf(data);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

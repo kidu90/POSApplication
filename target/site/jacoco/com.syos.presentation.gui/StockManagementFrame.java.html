@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StockManagementFrame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.presentation.gui</a> &gt; <span class="el_source">StockManagementFrame.java</span></div><h1>StockManagementFrame.java</h1><pre class="source lang-java linenums">package com.syos.presentation.gui;
+
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
+
+import com.syos.domain.entity.Product;
+import com.syos.domain.entity.StockBatch;
+import com.syos.domain.valueobject.InventoryChannel;
+
+public class StockManagementFrame extends JFrame {
+    private final GuiAppContext context;
+<span class="nc" id="L32">    private final DefaultTableModel stockTableModel = new DefaultTableModel(new Object[] {&quot;Batch Number&quot;, &quot;Product&quot;, &quot;Channel&quot;, &quot;Quantity&quot;, &quot;Expiry&quot;, &quot;Received Date&quot;}, 0) {</span>
+        @Override
+        public boolean isCellEditable(int row, int column) {
+<span class="nc" id="L35">            return false;</span>
+        }
+    };
+<span class="nc" id="L38">    private final DefaultTableModel productTableModel = new DefaultTableModel(new Object[] {&quot;ID&quot;, &quot;Name&quot;, &quot;Category&quot;, &quot;Price&quot;, &quot;Unit&quot;}, 0) {</span>
+        @Override
+        public boolean isCellEditable(int row, int column) {
+<span class="nc" id="L41">            return false;</span>
+        }
+    };
+<span class="nc" id="L44">    private final JTextField batchNumberField = new JTextField(10);</span>
+<span class="nc" id="L45">    private final JComboBox&lt;Product&gt; productCombo = new JComboBox&lt;&gt;();</span>
+<span class="nc" id="L46">    private final JComboBox&lt;InventoryChannel&gt; channelCombo = new JComboBox&lt;&gt;(InventoryChannel.values());</span>
+<span class="nc" id="L47">    private final JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 99999, 1));</span>
+<span class="nc" id="L48">    private final JTextField expiryDateField = new JTextField(10);</span>
+<span class="nc" id="L49">    private final JTextField receivedDateField = new JTextField(10);</span>
+<span class="nc" id="L50">    private final JTextField productIdField = new JTextField(10);</span>
+<span class="nc" id="L51">    private final JTextField productNameField = new JTextField(14);</span>
+<span class="nc" id="L52">    private final JTextField categoryField = new JTextField(12);</span>
+<span class="nc" id="L53">    private final JTextField priceField = new JTextField(8);</span>
+<span class="nc" id="L54">    private final JTextField unitField = new JTextField(8);</span>
+<span class="nc" id="L55">    private final Map&lt;String, String&gt; productNameLookup = new LinkedHashMap&lt;&gt;();</span>
+    private JTable stockTable;
+
+<span class="nc" id="L58">    public StockManagementFrame(GuiAppContext context) {</span>
+<span class="nc" id="L59">        this.context = context;</span>
+<span class="nc" id="L60">        setTitle(&quot;Stock Management&quot;);</span>
+<span class="nc" id="L61">        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);</span>
+<span class="nc" id="L62">        setSize(1200, 780);</span>
+<span class="nc" id="L63">        setLocationRelativeTo(null);</span>
+<span class="nc" id="L64">        buildUi();</span>
+<span class="nc" id="L65">        refreshAll();</span>
+<span class="nc" id="L66">    }</span>
+
+    private void buildUi() {
+<span class="nc" id="L69">        setLayout(new BorderLayout(10, 10));</span>
+
+<span class="nc" id="L71">        JTabbedPane tabs = new JTabbedPane();</span>
+<span class="nc" id="L72">        tabs.addTab(&quot;View Current Stock&quot;, buildCurrentStockPanel());</span>
+<span class="nc" id="L73">        tabs.addTab(&quot;Add Stock&quot;, buildAddStockPanel());</span>
+<span class="nc" id="L74">        tabs.addTab(&quot;Products&quot;, buildProductsPanel());</span>
+<span class="nc" id="L75">        add(tabs, BorderLayout.CENTER);</span>
+
+<span class="nc" id="L77">        JPanel footer = new JPanel();</span>
+<span class="nc" id="L78">        JButton backButton = new JButton(&quot;Back to Menu&quot;);</span>
+<span class="nc" id="L79">        backButton.addActionListener(e -&gt; {</span>
+<span class="nc" id="L80">            stopStockPolling();</span>
+<span class="nc" id="L81">            dispose();</span>
+<span class="nc" id="L82">            new MainMenuFrame(context).setVisible(true);</span>
+<span class="nc" id="L83">        });</span>
+<span class="nc" id="L84">        footer.add(backButton);</span>
+<span class="nc" id="L85">        add(footer, BorderLayout.SOUTH);</span>
+<span class="nc" id="L86">    }</span>
+
+    private JPanel buildCurrentStockPanel() {
+<span class="nc" id="L89">        JPanel panel = new JPanel(new BorderLayout(8, 8));</span>
+<span class="nc" id="L90">        stockTable = new JTable(stockTableModel);</span>
+<span class="nc" id="L91">        panel.add(new JScrollPane(stockTable), BorderLayout.CENTER);</span>
+
+<span class="nc" id="L93">        JButton refreshButton = new JButton(&quot;Refresh&quot;);</span>
+<span class="nc" id="L94">        refreshButton.addActionListener(e -&gt; refreshStockTable(false));</span>
+<span class="nc" id="L95">        JPanel buttonPanel = new JPanel();</span>
+<span class="nc" id="L96">        buttonPanel.add(refreshButton);</span>
+<span class="nc" id="L97">        panel.add(buttonPanel, BorderLayout.SOUTH);</span>
+<span class="nc" id="L98">        return panel;</span>
+    }
+
+    private JPanel buildAddStockPanel() {
+<span class="nc" id="L102">        JPanel panel = new JPanel(new BorderLayout(8, 8));</span>
+
+<span class="nc" id="L104">        JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));</span>
+<span class="nc" id="L105">        form.add(new JLabel(&quot;Batch Number:&quot;));</span>
+<span class="nc" id="L106">        form.add(batchNumberField);</span>
+<span class="nc" id="L107">        form.add(new JLabel(&quot;Product:&quot;));</span>
+<span class="nc" id="L108">        form.add(productCombo);</span>
+<span class="nc" id="L109">        form.add(new JLabel(&quot;Channel:&quot;));</span>
+<span class="nc" id="L110">        form.add(channelCombo);</span>
+<span class="nc" id="L111">        form.add(new JLabel(&quot;Quantity:&quot;));</span>
+<span class="nc" id="L112">        form.add(quantitySpinner);</span>
+<span class="nc" id="L113">        form.add(new JLabel(&quot;Expiry Date (yyyy-MM-dd):&quot;));</span>
+<span class="nc" id="L114">        form.add(expiryDateField);</span>
+<span class="nc" id="L115">        form.add(new JLabel(&quot;Received Date (yyyy-MM-dd):&quot;));</span>
+<span class="nc" id="L116">        form.add(receivedDateField);</span>
+
+<span class="nc" id="L118">        JButton submitButton = new JButton(&quot;Submit Stock&quot;);</span>
+<span class="nc" id="L119">        submitButton.addActionListener(e -&gt; addStock());</span>
+<span class="nc" id="L120">        JButton clearButton = new JButton(&quot;Clear&quot;);</span>
+<span class="nc" id="L121">        clearButton.addActionListener(e -&gt; clearStockForm());</span>
+
+<span class="nc" id="L123">        JPanel actions = new JPanel();</span>
+<span class="nc" id="L124">        actions.add(submitButton);</span>
+<span class="nc" id="L125">        actions.add(clearButton);</span>
+
+<span class="nc" id="L127">        panel.add(form, BorderLayout.CENTER);</span>
+<span class="nc" id="L128">        panel.add(actions, BorderLayout.SOUTH);</span>
+<span class="nc" id="L129">        return panel;</span>
+    }
+
+    private JPanel buildProductsPanel() {
+<span class="nc" id="L133">        JPanel panel = new JPanel(new BorderLayout(8, 8));</span>
+
+<span class="nc" id="L135">        JTable table = new JTable(productTableModel);</span>
+<span class="nc" id="L136">        panel.add(new JScrollPane(table), BorderLayout.CENTER);</span>
+
+<span class="nc" id="L138">        JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));</span>
+<span class="nc" id="L139">        form.add(new JLabel(&quot;Product ID:&quot;));</span>
+<span class="nc" id="L140">        form.add(productIdField);</span>
+<span class="nc" id="L141">        form.add(new JLabel(&quot;Name:&quot;));</span>
+<span class="nc" id="L142">        form.add(productNameField);</span>
+<span class="nc" id="L143">        form.add(new JLabel(&quot;Category:&quot;));</span>
+<span class="nc" id="L144">        form.add(categoryField);</span>
+<span class="nc" id="L145">        form.add(new JLabel(&quot;Price:&quot;));</span>
+<span class="nc" id="L146">        form.add(priceField);</span>
+<span class="nc" id="L147">        form.add(new JLabel(&quot;Unit:&quot;));</span>
+<span class="nc" id="L148">        form.add(unitField);</span>
+
+<span class="nc" id="L150">        JButton addButton = new JButton(&quot;Add Product&quot;);</span>
+<span class="nc" id="L151">        addButton.addActionListener(e -&gt; addProduct());</span>
+<span class="nc" id="L152">        JButton refreshButton = new JButton(&quot;Refresh&quot;);</span>
+<span class="nc" id="L153">        refreshButton.addActionListener(e -&gt; refreshAll());</span>
+
+<span class="nc" id="L155">        JPanel actions = new JPanel();</span>
+<span class="nc" id="L156">        actions.add(addButton);</span>
+<span class="nc" id="L157">        actions.add(refreshButton);</span>
+
+<span class="nc" id="L159">        JPanel south = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L160">        south.add(form, BorderLayout.CENTER);</span>
+<span class="nc" id="L161">        south.add(actions, BorderLayout.SOUTH);</span>
+<span class="nc" id="L162">        panel.add(south, BorderLayout.SOUTH);</span>
+<span class="nc" id="L163">        return panel;</span>
+    }
+
+    public void refreshAll() {
+<span class="nc" id="L167">        refreshProducts();</span>
+<span class="nc" id="L168">        refreshStockTable(false);</span>
+<span class="nc" id="L169">    }</span>
+
+    private void refreshProducts() {
+<span class="nc" id="L172">        new SwingWorker&lt;List&lt;Product&gt;, Void&gt;() {</span>
+            @Override
+            protected List&lt;Product&gt; doInBackground() {
+<span class="nc" id="L175">                return context.getClientService().getProducts();</span>
+            }
+
+            @Override
+            protected void done() {
+                try {
+<span class="nc" id="L181">                    List&lt;Product&gt; products = get();</span>
+<span class="nc" id="L182">                    productTableModel.setRowCount(0);</span>
+<span class="nc" id="L183">                    productCombo.removeAllItems();</span>
+<span class="nc" id="L184">                    productNameLookup.clear();</span>
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                    for (Product product : products) {</span>
+<span class="nc" id="L187">                        productTableModel.addRow(new Object[] {</span>
+<span class="nc" id="L188">                            product.getId().getValue(),</span>
+<span class="nc" id="L189">                            product.getName(),</span>
+<span class="nc" id="L190">                            product.getCategory(),</span>
+<span class="nc" id="L191">                            product.getUnitPrice(),</span>
+<span class="nc" id="L192">                            product.getUnit()</span>
+                        });
+<span class="nc" id="L194">                        productCombo.addItem(product);</span>
+<span class="nc" id="L195">                        productNameLookup.put(product.getId().getValue(), product.getName());</span>
+<span class="nc" id="L196">                    }</span>
+<span class="nc" id="L197">                } catch (InterruptedException ex) {</span>
+<span class="nc" id="L198">                    Thread.currentThread().interrupt();</span>
+<span class="nc" id="L199">                    JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Refresh Products Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L200">                } catch (ExecutionException ex) {</span>
+<span class="nc" id="L201">                    JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Refresh Products Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L202">                }</span>
+<span class="nc" id="L203">            }</span>
+<span class="nc" id="L204">        }.execute();</span>
+<span class="nc" id="L205">    }</span>
+
+    private void refreshStockTable(boolean onlyIfChanged) {
+<span class="nc" id="L208">        new SwingWorker&lt;List&lt;StockBatch&gt;, Void&gt;() {</span>
+            @Override
+            protected List&lt;StockBatch&gt; doInBackground() {
+<span class="nc" id="L211">                return context.getClientService().getStock();</span>
+            }
+
+            @Override
+            protected void done() {
+                try {
+<span class="nc" id="L217">                    populateStockTable(get());</span>
+<span class="nc" id="L218">                } catch (InterruptedException ex) {</span>
+<span class="nc" id="L219">                    Thread.currentThread().interrupt();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                    if (!onlyIfChanged) {</span>
+<span class="nc" id="L221">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Refresh Stock Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+                    }
+<span class="nc" id="L223">                } catch (ExecutionException ex) {</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                    if (!onlyIfChanged) {</span>
+<span class="nc" id="L225">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Refresh Stock Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+                    }
+<span class="nc" id="L227">                }</span>
+<span class="nc" id="L228">            }</span>
+<span class="nc" id="L229">        }.execute();</span>
+<span class="nc" id="L230">    }</span>
+
+    public void populateStockTable(List&lt;StockBatch&gt; batches) {
+<span class="nc" id="L233">        DefaultTableModel model = (DefaultTableModel) stockTable.getModel();</span>
+<span class="nc" id="L234">        model.setRowCount(0);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        for (StockBatch batch : batches) {</span>
+<span class="nc" id="L236">            model.addRow(new Object[] {</span>
+<span class="nc" id="L237">                batch.getBatchNumber().getValue(),</span>
+<span class="nc" id="L238">                productNameLookup.getOrDefault(batch.getProductId().getValue(), batch.getProductId().getValue()),</span>
+<span class="nc" id="L239">                batch.getInventoryChannel().name(),</span>
+<span class="nc" id="L240">                batch.getQuantity(),</span>
+<span class="nc" id="L241">                batch.getExpiryDate().toString(),</span>
+<span class="nc" id="L242">                batch.getReceivedDate().toString()</span>
+            });
+<span class="nc" id="L244">        }</span>
+<span class="nc" id="L245">        stockTable.revalidate();</span>
+<span class="nc" id="L246">        stockTable.repaint();</span>
+<span class="nc" id="L247">    }</span>
+
+    private void addStock() {
+        try {
+<span class="nc" id="L251">            Product product = (Product) productCombo.getSelectedItem();</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">            if (product == null) {</span>
+<span class="nc" id="L253">                throw new IllegalArgumentException(&quot;Select a product&quot;);</span>
+            }
+
+<span class="nc" id="L256">            String batchNumber = batchNumberField.getText();</span>
+<span class="nc" id="L257">            String productId = product.getId().getValue();</span>
+<span class="nc" id="L258">            String channel = ((InventoryChannel) channelCombo.getSelectedItem()).name();</span>
+<span class="nc" id="L259">            int quantity = (Integer) quantitySpinner.getValue();</span>
+<span class="nc" id="L260">            String expiryDate = LocalDate.parse(expiryDateField.getText().trim()).toString();</span>
+<span class="nc" id="L261">            String receivedDate = LocalDate.parse(receivedDateField.getText().trim()).toString();</span>
+
+<span class="nc" id="L263">            new SwingWorker&lt;Void, Void&gt;() {</span>
+                @Override
+                protected Void doInBackground() {
+<span class="nc" id="L266">                    context.getClientService().addStock(</span>
+                        batchNumber,
+                        productId,
+                        channel,
+                        quantity,
+                        expiryDate,
+                        receivedDate
+                    );
+<span class="nc" id="L274">                    return null;</span>
+                }
+
+                @Override
+                protected void done() {
+                    try {
+<span class="nc" id="L280">                        get();</span>
+<span class="nc" id="L281">                        refreshAll();</span>
+<span class="nc" id="L282">                        clearStockForm();</span>
+<span class="nc" id="L283">                    } catch (InterruptedException ex) {</span>
+<span class="nc" id="L284">                        Thread.currentThread().interrupt();</span>
+<span class="nc" id="L285">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Add Stock Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L286">                    } catch (ExecutionException ex) {</span>
+<span class="nc" id="L287">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Add Stock Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L288">                    }</span>
+<span class="nc" id="L289">                }</span>
+<span class="nc" id="L290">            }.execute();</span>
+<span class="nc" id="L291">        } catch (RuntimeException ex) {</span>
+<span class="nc" id="L292">            JOptionPane.showMessageDialog(this, ex.getMessage(), &quot;Add Stock Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L293">        }</span>
+<span class="nc" id="L294">    }</span>
+
+    private void addProduct() {
+        try {
+<span class="nc" id="L298">            String id = productIdField.getText();</span>
+<span class="nc" id="L299">            String name = productNameField.getText();</span>
+<span class="nc" id="L300">            String category = categoryField.getText();</span>
+<span class="nc" id="L301">            double price = Double.parseDouble(priceField.getText().trim());</span>
+<span class="nc" id="L302">            String unit = unitField.getText();</span>
+
+<span class="nc" id="L304">            new SwingWorker&lt;Void, Void&gt;() {</span>
+                @Override
+                protected Void doInBackground() {
+<span class="nc" id="L307">                    context.getClientService().addProduct(id, name, category, price, unit);</span>
+<span class="nc" id="L308">                    return null;</span>
+                }
+
+                @Override
+                protected void done() {
+                    try {
+<span class="nc" id="L314">                        get();</span>
+<span class="nc" id="L315">                        refreshAll();</span>
+<span class="nc" id="L316">                        clearProductForm();</span>
+<span class="nc" id="L317">                    } catch (InterruptedException ex) {</span>
+<span class="nc" id="L318">                        Thread.currentThread().interrupt();</span>
+<span class="nc" id="L319">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Add Product Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L320">                    } catch (ExecutionException ex) {</span>
+<span class="nc" id="L321">                        JOptionPane.showMessageDialog(StockManagementFrame.this, ex.getMessage(), &quot;Add Product Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L322">                    }</span>
+<span class="nc" id="L323">                }</span>
+<span class="nc" id="L324">            }.execute();</span>
+<span class="nc" id="L325">        } catch (RuntimeException ex) {</span>
+<span class="nc" id="L326">            JOptionPane.showMessageDialog(this, ex.getMessage(), &quot;Add Product Failed&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L327">        }</span>
+<span class="nc" id="L328">    }</span>
+
+    private void stopStockPolling() {
+        // No polling timer active.
+<span class="nc" id="L332">    }</span>
+
+    private void clearStockForm() {
+<span class="nc" id="L335">        batchNumberField.setText(&quot;&quot;);</span>
+<span class="nc" id="L336">        quantitySpinner.setValue(1);</span>
+<span class="nc" id="L337">        expiryDateField.setText(&quot;&quot;);</span>
+<span class="nc" id="L338">        receivedDateField.setText(&quot;&quot;);</span>
+<span class="nc" id="L339">    }</span>
+
+    private void clearProductForm() {
+<span class="nc" id="L342">        productIdField.setText(&quot;&quot;);</span>
+<span class="nc" id="L343">        productNameField.setText(&quot;&quot;);</span>
+<span class="nc" id="L344">        categoryField.setText(&quot;&quot;);</span>
+<span class="nc" id="L345">        priceField.setText(&quot;&quot;);</span>
+<span class="nc" id="L346">        unitField.setText(&quot;&quot;);</span>
+<span class="nc" id="L347">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

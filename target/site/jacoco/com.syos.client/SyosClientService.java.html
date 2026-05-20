@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SyosClientService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.client</a> &gt; <span class="el_source">SyosClientService.java</span></div><h1>SyosClientService.java</h1><pre class="source lang-java linenums">package com.syos.client;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.entity.Product;
+import com.syos.domain.entity.StockBatch;
+import com.syos.domain.entity.User;
+import com.syos.shared.Request;
+import com.syos.shared.Response;
+
+public class SyosClientService {
+    private final RemoteSyosClient remoteClient;
+    private final com.syos.client.network.ServerConnection serverConnection;
+
+<span class="nc" id="L18">    public SyosClientService(RemoteSyosClient remoteClient) {</span>
+<span class="nc" id="L19">        this.remoteClient = remoteClient;</span>
+<span class="nc" id="L20">        this.serverConnection = null;</span>
+<span class="nc" id="L21">    }</span>
+
+<span class="nc" id="L23">    public SyosClientService(com.syos.client.network.ServerConnection serverConnection) {</span>
+<span class="nc" id="L24">        this.remoteClient = null;</span>
+<span class="nc" id="L25">        this.serverConnection = serverConnection;</span>
+<span class="nc" id="L26">    }</span>
+
+    public User login(String username, String password) {
+<span class="nc" id="L29">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L30">        params.put(&quot;username&quot;, username);</span>
+<span class="nc" id="L31">        params.put(&quot;password&quot;, password);</span>
+<span class="nc" id="L32">        return castData(send(&quot;LOGIN&quot;, params));</span>
+    }
+
+    public User register(String fullName, String address, String username, String password) {
+<span class="nc" id="L36">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L37">        params.put(&quot;fullName&quot;, fullName);</span>
+<span class="nc" id="L38">        params.put(&quot;address&quot;, address);</span>
+<span class="nc" id="L39">        params.put(&quot;username&quot;, username);</span>
+<span class="nc" id="L40">        params.put(&quot;password&quot;, password);</span>
+<span class="nc" id="L41">        return castData(send(&quot;REGISTER&quot;, params));</span>
+    }
+
+    public List&lt;Product&gt; getProducts() {
+<span class="nc" id="L45">        return castData(send(&quot;GET_PRODUCTS&quot;, Map.of()));</span>
+    }
+
+    public List&lt;StockBatch&gt; getStock() {
+<span class="nc" id="L49">        return castData(send(&quot;GET_STOCK&quot;, Map.of()));</span>
+    }
+
+    public void addProduct(String id, String name, String category, double price, String unit) {
+<span class="nc" id="L53">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L54">        params.put(&quot;id&quot;, id);</span>
+<span class="nc" id="L55">        params.put(&quot;name&quot;, name);</span>
+<span class="nc" id="L56">        params.put(&quot;category&quot;, category);</span>
+<span class="nc" id="L57">        params.put(&quot;price&quot;, price);</span>
+<span class="nc" id="L58">        params.put(&quot;unit&quot;, unit);</span>
+<span class="nc" id="L59">        send(&quot;ADD_PRODUCT&quot;, params);</span>
+<span class="nc" id="L60">    }</span>
+
+    public void addStock(String batchNumber, String productId, String channel, int quantity, String expiryDate, String receivedDate) {
+<span class="nc" id="L63">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L64">        params.put(&quot;batchNumber&quot;, batchNumber);</span>
+<span class="nc" id="L65">        params.put(&quot;productId&quot;, productId);</span>
+<span class="nc" id="L66">        params.put(&quot;channel&quot;, channel);</span>
+<span class="nc" id="L67">        params.put(&quot;quantity&quot;, quantity);</span>
+<span class="nc" id="L68">        params.put(&quot;expiryDate&quot;, expiryDate);</span>
+<span class="nc" id="L69">        params.put(&quot;receivedDate&quot;, receivedDate);</span>
+<span class="nc" id="L70">        send(&quot;ADD_STOCK&quot;, params);</span>
+<span class="nc" id="L71">    }</span>
+
+    public Bill checkoutInStore(Map&lt;String, Integer&gt; cart) {
+<span class="nc" id="L74">        return checkout(&quot;CHECKOUT_INSTORE&quot;, cart, null, null);</span>
+    }
+
+    public Bill checkoutOnline(Map&lt;String, Integer&gt; cart, String customerName, String customerAddress) {
+<span class="nc" id="L78">        return checkout(&quot;CHECKOUT_ONLINE&quot;, cart, customerName, customerAddress);</span>
+    }
+
+    public String getDailyReport() {
+<span class="nc" id="L82">        return castData(send(&quot;GET_DAILY_REPORT&quot;, Map.of()));</span>
+    }
+
+    public String getStockReport() {
+<span class="nc" id="L86">        return castData(send(&quot;GET_STOCK_REPORT&quot;, Map.of()));</span>
+    }
+
+    public String getBillReport() {
+<span class="nc" id="L90">        return castData(send(&quot;GET_BILL_REPORT&quot;, Map.of()));</span>
+    }
+
+    public String getReshelveReport() {
+<span class="nc" id="L94">        return castData(send(&quot;GET_RESHELVE_REPORT&quot;, Map.of()));</span>
+    }
+
+    private Bill checkout(String action, Map&lt;String, Integer&gt; cart, String customerName, String customerAddress) {
+<span class="nc" id="L98">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L99">        params.put(&quot;cart&quot;, new LinkedHashMap&lt;&gt;(cart));</span>
+<span class="nc" id="L100">        params.put(&quot;customerName&quot;, customerName);</span>
+<span class="nc" id="L101">        params.put(&quot;customerAddress&quot;, customerAddress);</span>
+<span class="nc" id="L102">        return castData(send(action, params));</span>
+    }
+
+    private Response send(String action, Map&lt;String, Object&gt; params) {
+<span class="nc" id="L106">        Request req = new Request(action, params);</span>
+        Response response;
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (serverConnection != null) {</span>
+<span class="nc" id="L109">            response = serverConnection.sendRequest(req);</span>
+        } else {
+<span class="nc" id="L111">            response = remoteClient.send(req);</span>
+        }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (!response.isSuccess()) {</span>
+<span class="nc" id="L114">            throw new IllegalArgumentException(response.getMessage());</span>
+        }
+<span class="nc" id="L116">        return response;</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; T castData(Response response) {
+<span class="nc" id="L121">        return (T) response.getData();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLiteStockRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.infrastructure.persistence</a> &gt; <span class="el_source">SQLiteStockRepository.java</span></div><h1>SQLiteStockRepository.java</h1><pre class="source lang-java linenums">package com.syos.infrastructure.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.syos.domain.entity.StockBatch;
+import com.syos.domain.repository.StockRepository;
+import com.syos.domain.valueobject.BatchNumber;
+import com.syos.domain.valueobject.InventoryChannel;
+import com.syos.domain.valueobject.ProductId;
+import com.syos.infrastructure.database.DatabaseManager;
+
+public class SQLiteStockRepository implements StockRepository {
+    private final DatabaseManager databaseManager;
+
+<span class="nc" id="L23">    public SQLiteStockRepository(DatabaseManager databaseManager) {</span>
+<span class="nc" id="L24">        this.databaseManager = databaseManager;</span>
+<span class="nc" id="L25">    }</span>
+
+    @Override
+    public void save(StockBatch batch) {
+<span class="nc" id="L29">        String sql = &quot;INSERT OR REPLACE INTO stock_batches (batch_number, product_id, inventory_channel, quantity, expiry_date, received_date) &quot; +</span>
+                 &quot;VALUES (?, ?, ?, ?, ?, ?)&quot;;
+        
+<span class="nc" id="L32">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L33">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L35">            pstmt.setString(1, batch.getBatchNumber().getValue());</span>
+<span class="nc" id="L36">            pstmt.setString(2, batch.getProductId().getValue());</span>
+<span class="nc" id="L37">            pstmt.setString(3, batch.getInventoryChannel().name());</span>
+<span class="nc" id="L38">            pstmt.setInt(4, batch.getQuantity());</span>
+<span class="nc" id="L39">            pstmt.setString(5, batch.getExpiryDate().toString());</span>
+<span class="nc" id="L40">            pstmt.setString(6, batch.getReceivedDate().toString());</span>
+<span class="nc" id="L41">            pstmt.executeUpdate();</span>
+            
+<span class="nc" id="L43">        } catch (SQLException e) {</span>
+<span class="nc" id="L44">            throw new RuntimeException(&quot;Failed to save stock batch&quot;, e);</span>
+<span class="nc" id="L45">        }</span>
+<span class="nc" id="L46">    }</span>
+
+    @Override
+    public Optional&lt;StockBatch&gt; findByBatchNumber(BatchNumber batchNumber) {
+<span class="nc" id="L50">        String sql = &quot;SELECT * FROM stock_batches WHERE batch_number = ?&quot;;</span>
+        
+<span class="nc" id="L52">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L53">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L55">            pstmt.setString(1, batchNumber.getValue());</span>
+<span class="nc" id="L56">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L59">                return Optional.of(mapResultSetToStockBatch(rs));</span>
+            }
+            
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L63">            throw new RuntimeException(&quot;Failed to find stock batch&quot;, e);</span>
+<span class="nc" id="L64">        }</span>
+        
+<span class="nc" id="L66">        return Optional.empty();</span>
+    }
+
+    @Override
+    public List&lt;StockBatch&gt; findByProductId(ProductId productId) {
+<span class="nc" id="L71">        List&lt;StockBatch&gt; batches = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L72">        String sql = &quot;SELECT * FROM stock_batches WHERE product_id = ? ORDER BY received_date&quot;;</span>
+        
+<span class="nc" id="L74">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L75">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L77">            pstmt.setString(1, productId.getValue());</span>
+<span class="nc" id="L78">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L81">                batches.add(mapResultSetToStockBatch(rs));</span>
+            }
+            
+<span class="nc" id="L84">        } catch (SQLException e) {</span>
+<span class="nc" id="L85">            throw new RuntimeException(&quot;Failed to find stock batches by product&quot;, e);</span>
+<span class="nc" id="L86">        }</span>
+        
+<span class="nc" id="L88">        return batches;</span>
+    }
+
+    @Override
+    public List&lt;StockBatch&gt; findByProductIdAndChannel(ProductId productId, InventoryChannel channel) {
+<span class="nc" id="L93">        List&lt;StockBatch&gt; batches = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L94">        String sql = &quot;SELECT * FROM stock_batches WHERE product_id = ? AND inventory_channel = ? ORDER BY received_date&quot;;</span>
+
+<span class="nc" id="L96">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L97">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L99">            pstmt.setString(1, productId.getValue());</span>
+<span class="nc" id="L100">            pstmt.setString(2, channel.name());</span>
+<span class="nc" id="L101">            ResultSet rs = pstmt.executeQuery();</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L104">                batches.add(mapResultSetToStockBatch(rs));</span>
+            }
+
+<span class="nc" id="L107">        } catch (SQLException e) {</span>
+<span class="nc" id="L108">            throw new RuntimeException(&quot;Failed to find stock batches by product and channel&quot;, e);</span>
+<span class="nc" id="L109">        }</span>
+
+<span class="nc" id="L111">        return batches;</span>
+    }
+
+    @Override
+    public List&lt;StockBatch&gt; findAll() {
+<span class="nc" id="L116">        List&lt;StockBatch&gt; batches = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L117">        String sql = &quot;SELECT * FROM stock_batches ORDER BY product_id, received_date&quot;;</span>
+        
+<span class="nc" id="L119">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L120">             Statement stmt = conn.createStatement();</span>
+<span class="nc" id="L121">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+            
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L124">                batches.add(mapResultSetToStockBatch(rs));</span>
+            }
+            
+<span class="nc" id="L127">        } catch (SQLException e) {</span>
+<span class="nc" id="L128">            throw new RuntimeException(&quot;Failed to find all stock batches&quot;, e);</span>
+<span class="nc" id="L129">        }</span>
+        
+<span class="nc" id="L131">        return batches;</span>
+    }
+
+    @Override
+    public List&lt;StockBatch&gt; findExpired() {
+<span class="nc" id="L136">        List&lt;StockBatch&gt; batches = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L137">        String sql = &quot;SELECT * FROM stock_batches WHERE expiry_date &lt; ? AND quantity &gt; 0 ORDER BY expiry_date&quot;;</span>
+        
+<span class="nc" id="L139">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L140">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L142">            pstmt.setString(1, LocalDate.now().toString());</span>
+<span class="nc" id="L143">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L146">                batches.add(mapResultSetToStockBatch(rs));</span>
+            }
+            
+<span class="nc" id="L149">        } catch (SQLException e) {</span>
+<span class="nc" id="L150">            throw new RuntimeException(&quot;Failed to find expired batches&quot;, e);</span>
+<span class="nc" id="L151">        }</span>
+        
+<span class="nc" id="L153">        return batches;</span>
+    }
+
+    @Override
+    public List&lt;StockBatch&gt; findExpiringSoon(int daysThreshold) {
+<span class="nc" id="L158">        List&lt;StockBatch&gt; batches = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L159">        String sql = &quot;SELECT * FROM stock_batches WHERE expiry_date &gt;= ? AND expiry_date &lt;= ? AND quantity &gt; 0 ORDER BY expiry_date&quot;;</span>
+        
+<span class="nc" id="L161">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L162">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L164">            LocalDate now = LocalDate.now();</span>
+<span class="nc" id="L165">            LocalDate threshold = now.plusDays(daysThreshold);</span>
+            
+<span class="nc" id="L167">            pstmt.setString(1, now.toString());</span>
+<span class="nc" id="L168">            pstmt.setString(2, threshold.toString());</span>
+<span class="nc" id="L169">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L171" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L172">                batches.add(mapResultSetToStockBatch(rs));</span>
+            }
+            
+<span class="nc" id="L175">        } catch (SQLException e) {</span>
+<span class="nc" id="L176">            throw new RuntimeException(&quot;Failed to find expiring batches&quot;, e);</span>
+<span class="nc" id="L177">        }</span>
+        
+<span class="nc" id="L179">        return batches;</span>
+    }
+
+    @Override
+    public int getTotalQuantityForProduct(ProductId productId) {
+<span class="nc" id="L184">        String sql = &quot;SELECT SUM(quantity) as total FROM stock_batches WHERE product_id = ? AND expiry_date &gt;= ?&quot;;</span>
+        
+<span class="nc" id="L186">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L187">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+            
+<span class="nc" id="L189">            pstmt.setString(1, productId.getValue());</span>
+<span class="nc" id="L190">            pstmt.setString(2, LocalDate.now().toString());</span>
+<span class="nc" id="L191">            ResultSet rs = pstmt.executeQuery();</span>
+            
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L194">                return rs.getInt(&quot;total&quot;);</span>
+            }
+            
+<span class="nc bnc" id="L197" title="All 4 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L198">            throw new RuntimeException(&quot;Failed to get total quantity&quot;, e);</span>
+<span class="nc" id="L199">        }</span>
+        
+<span class="nc" id="L201">        return 0;</span>
+    }
+
+    @Override
+    public int getTotalQuantityForProductAndChannel(ProductId productId, InventoryChannel channel) {
+<span class="nc" id="L206">        String sql = &quot;SELECT SUM(quantity) as total FROM stock_batches WHERE product_id = ? AND inventory_channel = ? AND expiry_date &gt;= ?&quot;;</span>
+
+<span class="nc" id="L208">        try (Connection conn = databaseManager.getConnection();</span>
+<span class="nc" id="L209">             PreparedStatement pstmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L211">            pstmt.setString(1, productId.getValue());</span>
+<span class="nc" id="L212">            pstmt.setString(2, channel.name());</span>
+<span class="nc" id="L213">            pstmt.setString(3, LocalDate.now().toString());</span>
+<span class="nc" id="L214">            ResultSet rs = pstmt.executeQuery();</span>
+
+<span class="nc bnc" id="L216" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L217">                return rs.getInt(&quot;total&quot;);</span>
+            }
+
+<span class="nc bnc" id="L220" title="All 4 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L221">            throw new RuntimeException(&quot;Failed to get total quantity by channel&quot;, e);</span>
+<span class="nc" id="L222">        }</span>
+
+<span class="nc" id="L224">        return 0;</span>
+    }
+
+    @Override
+    public void update(StockBatch batch) {
+<span class="nc" id="L229">        save(batch);</span>
+<span class="nc" id="L230">    }</span>
+
+    private StockBatch mapResultSetToStockBatch(ResultSet rs) throws SQLException {
+<span class="nc" id="L233">        String channelValue = rs.getString(&quot;inventory_channel&quot;);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        InventoryChannel channel = channelValue == null ? InventoryChannel.STORE : InventoryChannel.valueOf(channelValue);</span>
+<span class="nc" id="L235">        return new StockBatch(</span>
+<span class="nc" id="L236">            new BatchNumber(rs.getString(&quot;batch_number&quot;)),</span>
+<span class="nc" id="L237">            new ProductId(rs.getString(&quot;product_id&quot;)),</span>
+            channel,
+<span class="nc" id="L239">            rs.getInt(&quot;quantity&quot;),</span>
+<span class="nc" id="L240">            LocalDate.parse(rs.getString(&quot;expiry_date&quot;)),</span>
+<span class="nc" id="L241">            LocalDate.parse(rs.getString(&quot;received_date&quot;))</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestClient1.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.client.test</a> &gt; <span class="el_source">TestClient1.java</span></div><h1>TestClient1.java</h1><pre class="source lang-java linenums">package com.syos.client.test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import com.syos.shared.Response;
+
+<span class="nc" id="L10">public class TestClient1 {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L12">        run();</span>
+<span class="nc" id="L13">    }</span>
+
+    public static void run() {
+<span class="nc" id="L16">        List&lt;Thread&gt; threads = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L17">        CountDownLatch done = new CountDownLatch(20);</span>
+
+<span class="nc bnc" id="L19" title="All 2 branches missed.">        for (int i = 0; i &lt; 5; i++) {</span>
+<span class="nc" id="L20">            threads.add(startRequestThread(&quot;CHECKOUT_INSTORE&quot;, i + 1, done));</span>
+<span class="nc" id="L21">            threads.add(startRequestThread(&quot;GET_STOCK&quot;, i + 1, done));</span>
+<span class="nc" id="L22">            threads.add(startRequestThread(&quot;ADD_STOCK&quot;, i + 1, done));</span>
+<span class="nc" id="L23">            threads.add(startRequestThread(&quot;GET_DAILY_REPORT&quot;, i + 1, done));</span>
+        }
+
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (Thread thread : threads) {</span>
+<span class="nc" id="L27">            thread.start();</span>
+<span class="nc" id="L28">        }</span>
+
+        try {
+<span class="nc" id="L31">            done.await();</span>
+<span class="nc" id="L32">        } catch (InterruptedException ex) {</span>
+<span class="nc" id="L33">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L34">        }</span>
+<span class="nc" id="L35">    }</span>
+
+    private static Thread startRequestThread(String action, int index, CountDownLatch done) {
+<span class="nc" id="L38">        return new Thread(() -&gt; {</span>
+<span class="nc" id="L39">            String sentAt = TestClientSupport.now();</span>
+<span class="nc" id="L40">            System.out.println(&quot;[TestClient1] sent action=&quot; + action + &quot; index=&quot; + index + &quot; at=&quot; + sentAt);</span>
+            try {
+<span class="nc bnc" id="L42" title="All 5 branches missed.">                Response response = switch (action) {</span>
+<span class="nc" id="L43">                    case &quot;CHECKOUT_INSTORE&quot; -&gt; TestClientSupport.send(action, TestClientSupport.checkoutCart(&quot;P001&quot;, 1));</span>
+<span class="nc" id="L44">                    case &quot;GET_STOCK&quot; -&gt; TestClientSupport.send(action, Map.of());</span>
+<span class="nc" id="L45">                    case &quot;ADD_STOCK&quot; -&gt; TestClientSupport.send(action, TestClientSupport.addStockParams(&quot;TB1-&quot; + index, &quot;P001&quot;, &quot;STORE&quot;, 1));</span>
+<span class="nc" id="L46">                    case &quot;GET_DAILY_REPORT&quot; -&gt; TestClientSupport.send(action, Map.of());</span>
+<span class="nc" id="L47">                    default -&gt; throw new IllegalArgumentException(&quot;Unsupported action: &quot; + action);</span>
+                };
+<span class="nc" id="L49">                String receivedAt = TestClientSupport.now();</span>
+<span class="nc" id="L50">                System.out.println(&quot;[TestClient1] response action=&quot; + action + &quot; index=&quot; + index + &quot; at=&quot; + receivedAt + &quot; success=&quot; + response.isSuccess() + &quot; message=&quot; + response.getMessage());</span>
+<span class="nc" id="L51">            } catch (Exception ex) {</span>
+<span class="nc" id="L52">                String failedAt = TestClientSupport.now();</span>
+<span class="nc" id="L53">                System.out.println(&quot;[TestClient1] failed action=&quot; + action + &quot; index=&quot; + index + &quot; at=&quot; + failedAt + &quot; error=&quot; + ex.getMessage());</span>
+            } finally {
+<span class="nc" id="L55">                done.countDown();</span>
+            }
+<span class="nc" id="L57">        }, &quot;test-client-1-&quot; + action + &quot;-&quot; + index);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

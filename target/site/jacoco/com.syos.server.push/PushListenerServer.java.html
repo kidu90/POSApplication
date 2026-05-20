@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PushListenerServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.server.push</a> &gt; <span class="el_source">PushListenerServer.java</span></div><h1>PushListenerServer.java</h1><pre class="source lang-java linenums">package com.syos.server.push;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+
+public class PushListenerServer implements Runnable {
+    private final int port;
+    private final PushNotificationService pushService;
+
+<span class="nc" id="L15">    public PushListenerServer(int port, PushNotificationService pushService) {</span>
+<span class="nc" id="L16">        this.port = port;</span>
+<span class="nc" id="L17">        this.pushService = pushService;</span>
+<span class="nc" id="L18">    }</span>
+
+    @Override
+    public void run() {
+<span class="nc" id="L22">        try (ServerSocket serverSocket = new ServerSocket(port)) {</span>
+            while (true) {
+<span class="nc" id="L24">                handlePushConnection(serverSocket.accept());</span>
+            }
+<span class="nc" id="L26">        } catch (Exception ex) {</span>
+<span class="nc" id="L27">            throw new RuntimeException(&quot;Push listener failed&quot;, ex);</span>
+        }
+    }
+
+    private void handlePushConnection(Socket clientSocket) {
+<span class="nc" id="L32">        Thread t = new Thread(() -&gt; {</span>
+            try {
+<span class="nc" id="L34">                ObjectOutputStream oos = new ObjectOutputStream(</span>
+<span class="nc" id="L35">                    clientSocket.getOutputStream()</span>
+                );
+<span class="nc" id="L37">                oos.flush();</span>
+<span class="nc" id="L38">                ObjectInputStream ois = new ObjectInputStream(</span>
+<span class="nc" id="L39">                    clientSocket.getInputStream()</span>
+                );
+
+<span class="nc" id="L42">                String clientId = (String) ois.readObject();</span>
+<span class="nc" id="L43">                System.out.println(&quot;Push client registered: &quot; + clientId);</span>
+
+<span class="nc" id="L45">                ConnectedClient client = new ConnectedClient(oos, pushService);</span>
+<span class="nc" id="L46">                pushService.register(client);</span>
+
+                try {
+                    while (true) {
+<span class="nc" id="L50">                        ois.readObject();</span>
+                    }
+<span class="nc" id="L52">                } catch (EOFException | SocketException ex) {</span>
+<span class="nc" id="L53">                    System.out.println(&quot;Push client disconnected: &quot; + clientId);</span>
+<span class="nc" id="L54">                    pushService.unregister(client);</span>
+                }
+<span class="nc" id="L56">            } catch (IOException | ClassNotFoundException ex) {</span>
+<span class="nc" id="L57">                System.err.println(&quot;Push registration error: &quot; + ex.getMessage());</span>
+            } finally {
+                try {
+<span class="nc" id="L60">                    clientSocket.close();</span>
+<span class="nc" id="L61">                } catch (IOException ignored) {</span>
+                    // Ignore close failures during disconnect handling.
+<span class="nc" id="L63">                }</span>
+            }
+<span class="nc" id="L65">        });</span>
+<span class="nc" id="L66">        t.setDaemon(true);</span>
+<span class="nc" id="L67">        t.setName(&quot;push-server-handler&quot;);</span>
+<span class="nc" id="L68">        t.start();</span>
+<span class="nc" id="L69">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FEFOStockSelectionStrategy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.strategy</a> &gt; <span class="el_source">FEFOStockSelectionStrategy.java</span></div><h1>FEFOStockSelectionStrategy.java</h1><pre class="source lang-java linenums">package com.syos.application.strategy;
+
+import com.syos.domain.entity.StockBatch;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+<span class="fc" id="L10">public class FEFOStockSelectionStrategy implements StockSelectionStrategy {</span>
+    @Override
+    public List&lt;StockBatch&gt; selectBatches(List&lt;StockBatch&gt; availableBatches, int requiredQuantity) {
+<span class="fc" id="L13">        List&lt;StockBatch&gt; validBatches = availableBatches.stream()</span>
+<span class="fc bfc" id="L14" title="All 4 branches covered.">            .filter(batch -&gt; !batch.isExpired() &amp;&amp; batch.hasStock())</span>
+<span class="fc" id="L15">            .sorted(Comparator.comparing(StockBatch::getExpiryDate))</span>
+<span class="fc" id="L16">            .collect(Collectors.toList());</span>
+
+<span class="fc" id="L18">        List&lt;StockBatch&gt; selectedBatches = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L19">        int remainingQuantity = requiredQuantity;</span>
+
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        for (StockBatch batch : validBatches) {</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">            if (remainingQuantity &lt;= 0) break;</span>
+
+<span class="fc" id="L24">            int quantityToTake = Math.min(remainingQuantity, batch.getQuantity());</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">            if (quantityToTake &gt; 0) {</span>
+<span class="fc" id="L26">                selectedBatches.add(batch);</span>
+<span class="fc" id="L27">                remainingQuantity -= quantityToTake;</span>
+            }
+<span class="fc" id="L29">        }</span>
+
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (remainingQuantity &gt; 0) {</span>
+<span class="fc" id="L32">            throw new IllegalStateException(&quot;Insufficient stock available&quot;);</span>
+        }
+
+<span class="fc" id="L35">        return selectedBatches;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

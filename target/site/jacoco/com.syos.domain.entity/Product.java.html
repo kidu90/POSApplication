@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Product.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.domain.entity</a> &gt; <span class="el_source">Product.java</span></div><h1>Product.java</h1><pre class="source lang-java linenums">package com.syos.domain.entity;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+import com.syos.domain.valueobject.Money;
+import com.syos.domain.valueobject.ProductId;
+
+public class Product implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final ProductId id;
+    private final String name;
+    private final String category;
+    private final Money unitPrice;
+    private final String unit;
+
+<span class="fc" id="L18">    public Product(ProductId id, String name, String category, Money unitPrice, String unit) {</span>
+<span class="fc bfc" id="L19" title="All 4 branches covered.">        if (name == null || name.isBlank()) {</span>
+<span class="fc" id="L20">            throw new IllegalArgumentException(&quot;Product name cannot be null or empty&quot;);</span>
+        }
+<span class="pc bpc" id="L22" title="2 of 4 branches missed.">        if (category == null || category.isBlank()) {</span>
+<span class="nc" id="L23">            throw new IllegalArgumentException(&quot;Product category cannot be null or empty&quot;);</span>
+        }
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">        if (unitPrice == null) {</span>
+<span class="nc" id="L26">            throw new IllegalArgumentException(&quot;Unit price cannot be null&quot;);</span>
+        }
+<span class="pc bpc" id="L28" title="2 of 4 branches missed.">        if (unit == null || unit.isBlank()) {</span>
+<span class="nc" id="L29">            throw new IllegalArgumentException(&quot;Unit cannot be null or empty&quot;);</span>
+        }
+
+<span class="fc" id="L32">        this.id = id;</span>
+<span class="fc" id="L33">        this.name = name;</span>
+<span class="fc" id="L34">        this.category = category;</span>
+<span class="fc" id="L35">        this.unitPrice = unitPrice;</span>
+<span class="fc" id="L36">        this.unit = unit;</span>
+<span class="fc" id="L37">    }</span>
+
+    public ProductId getId() {
+<span class="fc" id="L40">        return id;</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L44">        return name;</span>
+    }
+
+    public String getCategory() {
+<span class="fc" id="L48">        return category;</span>
+    }
+
+    public Money getUnitPrice() {
+<span class="fc" id="L52">        return unitPrice;</span>
+    }
+
+    public String getUnit() {
+<span class="fc" id="L56">        return unit;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L63">        Product product = (Product) o;</span>
+<span class="fc" id="L64">        return id.equals(product.id);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L69">        return Objects.hash(id);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L74">        return String.format(&quot;%s - %s (%s per %s)&quot;, id, name, unitPrice, unit);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

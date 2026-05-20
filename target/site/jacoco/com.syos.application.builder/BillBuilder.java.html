@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.builder</a> &gt; <span class="el_source">BillBuilder.java</span></div><h1>BillBuilder.java</h1><pre class="source lang-java linenums">package com.syos.application.builder;
+
+import java.time.LocalDateTime;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.valueobject.BillNumber;
+
+<span class="fc" id="L8">public class BillBuilder {</span>
+    private String billNumber;
+    private LocalDateTime timestamp;
+    private Bill.SaleType saleType;
+    private String customerName;
+    private String customerAddress;
+
+    public BillBuilder withBillNumber(String billNumber) {
+<span class="fc" id="L16">        this.billNumber = billNumber;</span>
+<span class="fc" id="L17">        return this;</span>
+    }
+
+    public BillBuilder withTimestamp(LocalDateTime timestamp) {
+<span class="fc" id="L21">        this.timestamp = timestamp;</span>
+<span class="fc" id="L22">        return this;</span>
+    }
+
+    public BillBuilder withSaleType(Bill.SaleType saleType) {
+<span class="fc" id="L26">        this.saleType = saleType;</span>
+<span class="fc" id="L27">        return this;</span>
+    }
+
+    public BillBuilder forInStore() {
+<span class="fc" id="L31">        this.saleType = Bill.SaleType.IN_STORE;</span>
+<span class="fc" id="L32">        return this;</span>
+    }
+
+    public BillBuilder forOnline(String customerName, String customerAddress) {
+<span class="fc" id="L36">        this.saleType = Bill.SaleType.ONLINE;</span>
+<span class="fc" id="L37">        this.customerName = customerName;</span>
+<span class="fc" id="L38">        this.customerAddress = customerAddress;</span>
+<span class="fc" id="L39">        return this;</span>
+    }
+
+    public Bill build() {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (billNumber == null) {</span>
+<span class="fc" id="L44">            throw new IllegalStateException(&quot;Bill number is required&quot;);</span>
+        }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (timestamp == null) {</span>
+<span class="fc" id="L47">            timestamp = LocalDateTime.now();</span>
+        }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (saleType == null) {</span>
+<span class="fc" id="L50">            throw new IllegalStateException(&quot;Sale type is required&quot;);</span>
+        }
+
+<span class="fc" id="L53">        Bill bill = new Bill(new BillNumber(billNumber), timestamp, saleType);</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">        if (saleType == Bill.SaleType.ONLINE &amp;&amp; customerName != null) {</span>
+<span class="fc" id="L55">            bill.setCustomerDetails(customerName, customerAddress);</span>
+        }
+<span class="fc" id="L57">        return bill;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

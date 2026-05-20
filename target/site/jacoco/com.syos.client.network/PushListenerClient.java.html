@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PushListenerClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.client.network</a> &gt; <span class="el_source">PushListenerClient.java</span></div><h1>PushListenerClient.java</h1><pre class="source lang-java linenums">package com.syos.client.network;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
+import com.syos.domain.entity.StockBatch;
+import com.syos.presentation.gui.StockManagementFrame;
+import com.syos.shared.PushEvent;
+import com.syos.shared.Request;
+import com.syos.shared.Response;
+
+public class PushListenerClient {
+    private final String host;
+    private final int pushPort;
+    private final String clientId;
+    private final ServerConnection serverConnection;
+    private final StockManagementFrame stockManagementFrame;
+    private Socket socket;
+    private ObjectOutputStream oos;
+    private ObjectInputStream ois;
+<span class="nc" id="L31">    private volatile boolean running = true;</span>
+
+    public PushListenerClient(String host,
+                              int pushPort,
+                              String clientId,
+                              ServerConnection serverConnection,
+<span class="nc" id="L37">                              StockManagementFrame stockManagementFrame) {</span>
+<span class="nc" id="L38">        this.host = host;</span>
+<span class="nc" id="L39">        this.pushPort = pushPort;</span>
+<span class="nc" id="L40">        this.clientId = clientId;</span>
+<span class="nc" id="L41">        this.serverConnection = serverConnection;</span>
+<span class="nc" id="L42">        this.stockManagementFrame = stockManagementFrame;</span>
+<span class="nc" id="L43">    }</span>
+
+    public void start() {
+        try {
+<span class="nc" id="L47">            socket = new Socket(host, pushPort);</span>
+<span class="nc" id="L48">            oos = new ObjectOutputStream(socket.getOutputStream());</span>
+<span class="nc" id="L49">            oos.writeObject(clientId);</span>
+<span class="nc" id="L50">            oos.flush();</span>
+<span class="nc" id="L51">            ois = new ObjectInputStream(socket.getInputStream());</span>
+<span class="nc" id="L52">        } catch (IOException e) {</span>
+<span class="nc" id="L53">            System.err.println(&quot;Push channel connection failed: &quot; + e.getMessage());</span>
+<span class="nc" id="L54">            return;</span>
+<span class="nc" id="L55">        }</span>
+
+<span class="nc" id="L57">        Thread listenerThread = new Thread(() -&gt; {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            while (running) {</span>
+                try {
+<span class="nc" id="L60">                    Object obj = ois.readObject();</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                    if (obj instanceof PushEvent event) {</span>
+<span class="nc" id="L62">                        handleEvent(event);</span>
+                    }
+<span class="nc" id="L64">                } catch (EOFException | SocketException e) {</span>
+<span class="nc" id="L65">                    System.out.println(&quot;Push channel closed by server.&quot;);</span>
+<span class="nc" id="L66">                    break;</span>
+<span class="nc" id="L67">                } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L68">                    System.err.println(&quot;Unknown push event type: &quot; + e.getMessage());</span>
+<span class="nc" id="L69">                } catch (IOException e) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                    if (running) {</span>
+<span class="nc" id="L71">                        System.err.println(&quot;Push channel IO error: &quot; + e.getMessage());</span>
+                    }
+<span class="nc" id="L73">                    break;</span>
+<span class="nc" id="L74">                }</span>
+            }
+<span class="nc" id="L76">        });</span>
+<span class="nc" id="L77">        listenerThread.setDaemon(true);</span>
+<span class="nc" id="L78">        listenerThread.setName(&quot;push-listener-&quot; + clientId);</span>
+<span class="nc" id="L79">        listenerThread.start();</span>
+<span class="nc" id="L80">    }</span>
+
+    private void handleEvent(PushEvent event) {
+<span class="nc bnc" id="L83" title="All 3 branches missed.">        switch (event.getEventType()) {</span>
+<span class="nc" id="L84">            case &quot;STOCK_CHANGED&quot; -&gt; SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L85">                new SwingWorker&lt;List&lt;StockBatch&gt;, Void&gt;() {</span>
+                    @Override
+                    protected List&lt;StockBatch&gt; doInBackground() {
+<span class="nc" id="L88">                        Response r = serverConnection.sendRequest(</span>
+<span class="nc" id="L89">                            new Request(&quot;GET_STOCK&quot;, Map.of())</span>
+                        );
+                        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L92">                        List&lt;StockBatch&gt; batches = (List&lt;StockBatch&gt;) r.getData();</span>
+<span class="nc" id="L93">                        return batches;</span>
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+<span class="nc" id="L99">                            List&lt;StockBatch&gt; batches = get();</span>
+<span class="nc" id="L100">                            stockManagementFrame.populateStockTable(batches);</span>
+<span class="nc" id="L101">                        } catch (InterruptedException | ExecutionException e) {</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                            if (e instanceof InterruptedException) {</span>
+<span class="nc" id="L103">                                Thread.currentThread().interrupt();</span>
+                            }
+<span class="nc" id="L105">                            System.err.println(&quot;Push stock refresh failed: &quot; + e.getMessage());</span>
+<span class="nc" id="L106">                        }</span>
+<span class="nc" id="L107">                    }</span>
+<span class="nc" id="L108">                }.execute();</span>
+<span class="nc" id="L109">            });</span>
+<span class="nc" id="L110">            case &quot;PRODUCT_CHANGED&quot; -&gt; SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L111">                stockManagementFrame.refreshAll();</span>
+<span class="nc" id="L112">            });</span>
+        }
+<span class="nc" id="L114">    }</span>
+
+    public void stop() {
+<span class="nc" id="L117">        running = false;</span>
+        try {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (socket != null) {</span>
+<span class="nc" id="L120">                socket.close();</span>
+            }
+<span class="nc" id="L122">        } catch (IOException ignored) {</span>
+            // Ignore close failures during shutdown.
+<span class="nc" id="L124">        }</span>
+<span class="nc" id="L125">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

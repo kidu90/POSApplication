@@ -62,6 +62,7 @@ public class StockManagementFrame extends JFrame {
         setSize(1200, 780);
         setLocationRelativeTo(null);
         buildUi();
+        refreshAll();
     }
 
     private void buildUi() {

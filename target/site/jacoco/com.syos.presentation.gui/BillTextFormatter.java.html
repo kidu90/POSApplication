@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillTextFormatter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.presentation.gui</a> &gt; <span class="el_source">BillTextFormatter.java</span></div><h1>BillTextFormatter.java</h1><pre class="source lang-java linenums">package com.syos.presentation.gui;
+
+import java.time.format.DateTimeFormatter;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.entity.BillItem;
+
+public final class BillTextFormatter {
+<span class="fc" id="L9">    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy HH:mm:ss&quot;);</span>
+
+    private BillTextFormatter() {
+    }
+
+    public static String format(Bill bill) {
+<span class="fc" id="L15">        StringBuilder output = new StringBuilder();</span>
+<span class="fc" id="L16">        output.append(&quot;\n&quot;).append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L17">        output.append(&quot;SYNEX OUTLET STORE\n&quot;);</span>
+<span class="fc" id="L18">        output.append(&quot;GST No: 29XXXXX1234X1Z5\n&quot;);</span>
+<span class="fc" id="L19">        output.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L20">        output.append(&quot;Bill No: &quot;).append(bill.getBillNumber()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L21">        output.append(&quot;Date/Time: &quot;).append(bill.getTimestamp().format(DATE_TIME_FORMATTER)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L22">        output.append(&quot;Type: &quot;).append(bill.getSaleType()).append(&quot;\n&quot;);</span>
+
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (bill.getSaleType() == Bill.SaleType.ONLINE) {</span>
+<span class="fc" id="L25">            output.append(&quot;Customer: &quot;).append(bill.getCustomerName()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L26">            output.append(&quot;Address: &quot;).append(bill.getCustomerAddress()).append(&quot;\n&quot;);</span>
+        }
+
+<span class="fc" id="L29">        output.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L30">        output.append(String.format(&quot;%-30s %-8s %-12s %-12s%n&quot;, &quot;Item&quot;, &quot;Qty&quot;, &quot;Rate&quot;, &quot;Amount&quot;));</span>
+<span class="fc" id="L31">        output.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        for (BillItem item : bill.getItems()) {</span>
+<span class="fc" id="L34">            output.append(String.format(&quot;%-30s %-8d %-12s %-12s%n&quot;,</span>
+<span class="fc" id="L35">                item.getProductName(),</span>
+<span class="fc" id="L36">                item.getQuantity(),</span>
+<span class="fc" id="L37">                item.getUnitPrice(),</span>
+<span class="fc" id="L38">                item.getLineTotal()));</span>
+<span class="fc" id="L39">        }</span>
+
+<span class="fc" id="L41">        output.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L42">        output.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;Subtotal:&quot;, bill.getSubtotal()));</span>
+<span class="fc" id="L43">        output.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;Discount:&quot;, bill.getDiscount()));</span>
+<span class="fc" id="L44">        output.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;TOTAL:&quot;, bill.getTotal()));</span>
+<span class="fc" id="L45">        output.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L46">        return output.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

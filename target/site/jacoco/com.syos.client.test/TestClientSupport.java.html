@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestClientSupport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.client.test</a> &gt; <span class="el_source">TestClientSupport.java</span></div><h1>TestClientSupport.java</h1><pre class="source lang-java linenums">package com.syos.client.test;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.syos.client.network.ServerConnection;
+import com.syos.shared.Request;
+import com.syos.shared.Response;
+
+final class TestClientSupport {
+    private static final String HOST = &quot;localhost&quot;;
+    private static final int PORT = 9090;
+
+    private TestClientSupport() {
+    }
+
+    static Response send(String action, Map&lt;String, Object&gt; params) {
+<span class="nc" id="L20">        ServerConnection connection = new ServerConnection(HOST, PORT);</span>
+<span class="nc" id="L21">        return connection.sendRequest(new Request(action, params));</span>
+    }
+
+    static Map&lt;String, Object&gt; checkoutCart(String productId, int quantity) {
+<span class="nc" id="L25">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L26">        Map&lt;String, Integer&gt; cart = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L27">        cart.put(productId, quantity);</span>
+<span class="nc" id="L28">        params.put(&quot;cart&quot;, cart);</span>
+<span class="nc" id="L29">        params.put(&quot;customerName&quot;, &quot;Test User&quot;);</span>
+<span class="nc" id="L30">        params.put(&quot;customerAddress&quot;, &quot;Test Address&quot;);</span>
+<span class="nc" id="L31">        return params;</span>
+    }
+
+    static Map&lt;String, Object&gt; addStockParams(String batchNumber, String productId, String channel, int quantity) {
+<span class="nc" id="L35">        Map&lt;String, Object&gt; params = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L36">        params.put(&quot;batchNumber&quot;, batchNumber);</span>
+<span class="nc" id="L37">        params.put(&quot;productId&quot;, productId);</span>
+<span class="nc" id="L38">        params.put(&quot;channel&quot;, channel);</span>
+<span class="nc" id="L39">        params.put(&quot;quantity&quot;, quantity);</span>
+<span class="nc" id="L40">        params.put(&quot;expiryDate&quot;, LocalDate.now().plusDays(30).toString());</span>
+<span class="nc" id="L41">        params.put(&quot;receivedDate&quot;, LocalDate.now().toString());</span>
+<span class="nc" id="L42">        return params;</span>
+    }
+
+    static String now() {
+<span class="nc" id="L46">        return LocalTime.now().toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

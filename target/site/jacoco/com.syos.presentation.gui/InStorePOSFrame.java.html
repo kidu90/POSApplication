@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InStorePOSFrame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.presentation.gui</a> &gt; <span class="el_source">InStorePOSFrame.java</span></div><h1>InStorePOSFrame.java</h1><pre class="source lang-java linenums">package com.syos.presentation.gui;
+
+import com.syos.application.strategy.DiscountStrategy;
+import com.syos.application.strategy.FEFOStockSelectionStrategy;
+import com.syos.application.strategy.NoDiscountStrategy;
+import com.syos.application.strategy.StockSelectionStrategy;
+import com.syos.domain.entity.Bill;
+
+public class InStorePOSFrame extends AbstractSalesFrame {
+<span class="nc" id="L10">    private final DiscountStrategy discountStrategy = new NoDiscountStrategy();</span>
+<span class="nc" id="L11">    private final StockSelectionStrategy stockSelectionStrategy = new FEFOStockSelectionStrategy();</span>
+
+    public InStorePOSFrame(GuiAppContext context) {
+<span class="nc" id="L14">        super(context, &quot;In-Store POS&quot;, &quot;In-Store POS&quot;, null, null);</span>
+<span class="nc" id="L15">    }</span>
+
+    @Override
+    protected Bill.SaleType getSaleType() {
+<span class="nc" id="L19">        return Bill.SaleType.IN_STORE;</span>
+    }
+
+    @Override
+    protected DiscountStrategy getDiscountStrategy() {
+<span class="nc" id="L24">        return discountStrategy;</span>
+    }
+
+    @Override
+    protected StockSelectionStrategy getStockSelectionStrategy() {
+<span class="nc" id="L29">        return stockSelectionStrategy;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

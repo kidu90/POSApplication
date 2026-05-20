@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillReport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.report</a> &gt; <span class="el_source">BillReport.java</span></div><h1>BillReport.java</h1><pre class="source lang-java linenums">package com.syos.application.report;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import com.syos.domain.entity.Bill;
+import com.syos.domain.repository.BillReadRepository;
+
+public class BillReport extends ReportGenerator {
+    private final BillReadRepository billRepository;
+
+<span class="fc" id="L12">    public BillReport(BillReadRepository billRepository) {</span>
+<span class="fc" id="L13">        this.billRepository = billRepository;</span>
+<span class="fc" id="L14">    }</span>
+
+    @Override
+    protected String getReportHeader() {
+<span class="nc" id="L18">        return &quot;=&quot;.repeat(80) + &quot;\n&quot; +</span>
+               &quot;BILL REPORT - SYNEX OUTLET STORE\n&quot; +
+<span class="nc" id="L20">               &quot;=&quot;.repeat(80);</span>
+    }
+
+    @Override
+    protected String generateReportBody() {
+<span class="nc" id="L25">        List&lt;Bill&gt; bills = billRepository.findAll();</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        if (bills.isEmpty()) {</span>
+<span class="nc" id="L27">            return &quot;\nNo bills available.\n&quot;;</span>
+        }
+
+<span class="nc" id="L30">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L31">        sb.append('\n');</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        for (Bill bill : bills) {</span>
+<span class="nc" id="L33">            sb.append(&quot;Bill No: &quot;).append(bill.getBillNumber()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L34">            sb.append(&quot;Date/Time: &quot;).append(bill.getTimestamp().format(DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy HH:mm:ss&quot;))).append(&quot;\n&quot;);</span>
+<span class="nc" id="L35">            sb.append(&quot;Type: &quot;).append(bill.getSaleType()).append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (bill.getSaleType() == Bill.SaleType.ONLINE) {</span>
+<span class="nc" id="L37">                sb.append(&quot;Customer: &quot;).append(bill.getCustomerName()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L38">                sb.append(&quot;Address: &quot;).append(bill.getCustomerAddress()).append(&quot;\n&quot;);</span>
+            }
+<span class="nc" id="L40">            sb.append(String.format(&quot;%-10s %-30s %-8s %-10s %-10s%n&quot;, &quot;Code&quot;, &quot;Name&quot;, &quot;Qty&quot;, &quot;UnitPrice&quot;, &quot;Batch&quot;));</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">            for (var item : bill.getItems()) {</span>
+<span class="nc" id="L42">                sb.append(String.format(&quot;%-10s %-30s %-8d %-10s %-10s%n&quot;,</span>
+<span class="nc" id="L43">                    item.getProductId(),</span>
+<span class="nc" id="L44">                    item.getProductName(),</span>
+<span class="nc" id="L45">                    item.getQuantity(),</span>
+<span class="nc" id="L46">                    item.getUnitPrice(),</span>
+<span class="nc" id="L47">                    item.getBatchNumber()));</span>
+<span class="nc" id="L48">            }</span>
+<span class="nc" id="L49">            sb.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;Subtotal:&quot;, bill.getSubtotal()));</span>
+<span class="nc" id="L50">            sb.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;Discount:&quot;, bill.getDiscount()));</span>
+<span class="nc" id="L51">            sb.append(String.format(&quot;%-50s %-12s%n&quot;, &quot;TOTAL:&quot;, bill.getTotal()));</span>
+<span class="nc" id="L52">            sb.append(&quot;\n&quot;);</span>
+<span class="nc" id="L53">        }</span>
+
+<span class="nc" id="L55">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

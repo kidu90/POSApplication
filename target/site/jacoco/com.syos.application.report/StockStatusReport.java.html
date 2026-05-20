@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StockStatusReport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SYOS Point of Sale System</a> &gt; <a href="index.source.html" class="el_package">com.syos.application.report</a> &gt; <span class="el_source">StockStatusReport.java</span></div><h1>StockStatusReport.java</h1><pre class="source lang-java linenums">package com.syos.application.report;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.syos.domain.entity.Product;
+import com.syos.domain.entity.StockBatch;
+import com.syos.domain.repository.ProductReadRepository;
+import com.syos.domain.repository.StockReadRepository;
+import com.syos.domain.valueobject.InventoryChannel;
+import com.syos.domain.valueobject.ProductId;
+
+public class StockStatusReport extends ReportGenerator {
+    private static final int REORDER_LEVEL = 50;
+    private final StockReadRepository stockRepository;
+    private final ProductReadRepository productRepository;
+
+<span class="fc" id="L20">    public StockStatusReport(StockReadRepository stockRepository, ProductReadRepository productRepository) {</span>
+<span class="fc" id="L21">        this.stockRepository = stockRepository;</span>
+<span class="fc" id="L22">        this.productRepository = productRepository;</span>
+<span class="fc" id="L23">    }</span>
+
+    @Override
+    protected String getReportHeader() {
+<span class="fc" id="L27">        return &quot;=&quot;.repeat(80) + &quot;\n&quot; +</span>
+               &quot;STOCK STATUS REPORT - SYNEX OUTLET STORE\n&quot; +
+<span class="fc" id="L29">               &quot;=&quot;.repeat(80);</span>
+    }
+
+    @Override
+    protected String generateReportBody() {
+<span class="fc" id="L34">        List&lt;StockBatch&gt; allBatches = stockRepository.findAll();</span>
+<span class="fc" id="L35">        List&lt;Product&gt; allProducts = productRepository.findAll();</span>
+
+<span class="fc" id="L37">        Map&lt;ProductId, List&lt;StockBatch&gt;&gt; batchesByProduct = allBatches.stream()</span>
+<span class="fc" id="L38">            .collect(Collectors.groupingBy(StockBatch::getProductId));</span>
+
+<span class="fc" id="L40">        StringBuilder body = new StringBuilder();</span>
+<span class="fc" id="L41">        body.append(&quot;\nCURRENT STOCK LEVELS:\n&quot;);</span>
+<span class="fc" id="L42">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L43">        body.append(String.format(&quot;%-10s %-30s %-12s %-12s %-10s%n&quot;, &quot;Product ID&quot;, &quot;Name&quot;, &quot;Store Qty&quot;, &quot;Online Qty&quot;, &quot;Batches&quot;));</span>
+<span class="fc" id="L44">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (Product product : allProducts) {</span>
+<span class="fc" id="L47">            int storeQty = stockRepository.getTotalQuantityForProductAndChannel(product.getId(), InventoryChannel.STORE);</span>
+<span class="fc" id="L48">            int onlineQty = stockRepository.getTotalQuantityForProductAndChannel(product.getId(), InventoryChannel.ONLINE);</span>
+<span class="fc" id="L49">            int batchCount = batchesByProduct.getOrDefault(product.getId(), List.of()).size();</span>
+            
+<span class="fc" id="L51">            body.append(String.format(&quot;%-10s %-30s %-12d %-12d %-10d%n&quot;,</span>
+<span class="fc" id="L52">                product.getId(),</span>
+<span class="fc" id="L53">                product.getName(),</span>
+<span class="fc" id="L54">                storeQty,</span>
+<span class="fc" id="L55">                onlineQty,</span>
+<span class="fc" id="L56">                batchCount));</span>
+<span class="fc" id="L57">        }</span>
+
+<span class="fc" id="L59">        body.append(&quot;\nREORDER ALERTS (&lt;= &quot; + REORDER_LEVEL + &quot;):\n&quot;);</span>
+<span class="fc" id="L60">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L61">        body.append(String.format(&quot;%-10s %-30s %-12s %-12s%n&quot;, &quot;Product ID&quot;, &quot;Name&quot;, &quot;Store Qty&quot;, &quot;Online Qty&quot;));</span>
+<span class="fc" id="L62">        body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="fc" id="L64">        boolean hasReorderAlerts = false;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (Product product : allProducts) {</span>
+<span class="fc" id="L66">            int storeQty = stockRepository.getTotalQuantityForProductAndChannel(product.getId(), InventoryChannel.STORE);</span>
+<span class="fc" id="L67">            int onlineQty = stockRepository.getTotalQuantityForProductAndChannel(product.getId(), InventoryChannel.ONLINE);</span>
+
+<span class="pc bpc" id="L69" title="3 of 4 branches missed.">            if (storeQty &lt;= REORDER_LEVEL || onlineQty &lt;= REORDER_LEVEL) {</span>
+<span class="fc" id="L70">                hasReorderAlerts = true;</span>
+<span class="fc" id="L71">                body.append(String.format(&quot;%-10s %-30s %-12d %-12d%n&quot;,</span>
+<span class="fc" id="L72">                    product.getId(),</span>
+<span class="fc" id="L73">                    product.getName(),</span>
+<span class="fc" id="L74">                    storeQty,</span>
+<span class="fc" id="L75">                    onlineQty));</span>
+            }
+<span class="fc" id="L77">        }</span>
+
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (!hasReorderAlerts) {</span>
+<span class="nc" id="L80">            body.append(&quot;No products at or below reorder level.\n&quot;);</span>
+        }
+
+<span class="fc" id="L83">        List&lt;StockBatch&gt; expiringSoon = stockRepository.findExpiringSoon(7);</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (!expiringSoon.isEmpty()) {</span>
+<span class="nc" id="L85">            body.append(&quot;\nEXPIRING SOON (within 7 days):\n&quot;);</span>
+<span class="nc" id="L86">            body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L87">            body.append(String.format(&quot;%-15s %-10s %-15s %-15s%n&quot;, &quot;Batch&quot;, &quot;Product&quot;, &quot;Quantity&quot;, &quot;Expiry Date&quot;));</span>
+<span class="nc" id="L88">            body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            for (StockBatch batch : expiringSoon) {</span>
+<span class="nc" id="L91">                body.append(String.format(&quot;%-15s %-10s %-15d %-15s%n&quot;,</span>
+<span class="nc" id="L92">                    batch.getBatchNumber(),</span>
+<span class="nc" id="L93">                    batch.getProductId(),</span>
+<span class="nc" id="L94">                    batch.getQuantity(),</span>
+<span class="nc" id="L95">                    batch.getExpiryDate().format(DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy&quot;))));</span>
+<span class="nc" id="L96">            }</span>
+        }
+
+<span class="fc" id="L99">        List&lt;StockBatch&gt; expired = stockRepository.findExpired();</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (!expired.isEmpty()) {</span>
+<span class="nc" id="L101">            body.append(&quot;\nEXPIRED STOCK:\n&quot;);</span>
+<span class="nc" id="L102">            body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L103">            body.append(String.format(&quot;%-15s %-10s %-15s %-15s%n&quot;, &quot;Batch&quot;, &quot;Product&quot;, &quot;Quantity&quot;, &quot;Expiry Date&quot;));</span>
+<span class="nc" id="L104">            body.append(&quot;-&quot;.repeat(80)).append(&quot;\n&quot;);</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">            for (StockBatch batch : expired) {</span>
+<span class="nc" id="L107">                body.append(String.format(&quot;%-15s %-10s %-15d %-15s%n&quot;,</span>
+<span class="nc" id="L108">                    batch.getBatchNumber(),</span>
+<span class="nc" id="L109">                    batch.getProductId(),</span>
+<span class="nc" id="L110">                    batch.getQuantity(),</span>
+<span class="nc" id="L111">                    batch.getExpiryDate().format(DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy&quot;))));</span>
+<span class="nc" id="L112">            }</span>
+        }
+
+<span class="fc" id="L115">        return body.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
